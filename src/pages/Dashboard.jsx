@@ -2,27 +2,30 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 
 export default function Dashboard() {
-  const [userEmail, setUserEmail] = useState("");
+  const [profile, setProfile] = useState({ full_name: "", role: "" });
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      console.log("User data:", data); // Debugging
-      console.log("Error:", error); // Debugging
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name, role")
+        .single();
 
-      if (data?.user) {
-        setUserEmail(data.user.email);
+      if (error) {
+        console.error("Error fetching profile:", error);
       } else {
-        console.warn("No user found or session is invalid.");
+        setProfile(data);
       }
     };
-    fetchUser();
+
+    fetchProfile();
   }, []);
 
   return (
     <div>
       <h1>Welcome to your Dashboard</h1>
-      <p>Welcome, {userEmail}</p>
+      <p>Welcome, {profile.full_name}</p>
+      <p>You are a {profile.role}</p>
     </div>
   );
 }

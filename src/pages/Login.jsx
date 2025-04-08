@@ -15,17 +15,22 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const client = rememberMe ? supabase : supabaseSession;
-
-    const { error } = await client.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    if (!error) {
-      console.log("Login successful, navigating to dashboard...");
-      navigate("/dashboard");
+
+    console.log("Login response:", data); // Debugging
+    if (data?.session) {
+      console.log("Session created:", data.session);
     } else {
-      console.error("Login error:", error); // Debugging
+      console.warn("No session created.");
+    }
+
+    if (!error) {
+      navigate("/"); // Redirect to dashboard
+    } else {
+      console.error("Login error:", error);
       setError("Invalid email or password.");
     }
   };

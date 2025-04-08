@@ -8,20 +8,22 @@ export default function ProtectedRoute({ children }) {
   const location = useLocation();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
       console.log("Session data:", data); // Debugging
-      setIsAuthenticated(!!data.session);
-    });
+      setIsAuthenticated(!!data.session); // Set true if session exists, false otherwise
+    };
+
+    checkSession();
   }, []);
 
-  if (isAuthenticated === null) return <div>Loading...</div>;
+  if (isAuthenticated === null) {
+    return <div>Loading...</div>; // Show a loading state while checking authentication
+  }
 
-  // Redirect to login if not authenticated
-  if (!isAuthenticated && location.pathname !== "/") return <Navigate to="/" />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />; // Redirect to login if not authenticated
+  }
 
-  // Redirect to dashboard if authenticated and on the login page
-  if (isAuthenticated && location.pathname === "/")
-    return <Navigate to="/dashboard" />;
-
-  return children;
+  return children; // Render the protected component if authenticated
 }

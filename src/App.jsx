@@ -9,6 +9,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public route for login */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Protected route for dashboard */}
         <Route
           path="/"
           element={
@@ -17,7 +21,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/login" element={<Login />} />
+        {/* Redirect all unmatched routes to / */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>

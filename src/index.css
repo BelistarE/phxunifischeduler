@@ -1,4 +1,11 @@
 @import "tailwindcss";
 body {
   background-color: rgb(230, 230, 230);
+  font-family: "Tahoma", Courier, monospace;
+}
+
+@theme {
+  --color-frontier: #28714a;
+  --color-frontier-light: #3a8b5c;
+  --color-frontier-dark: #1e4a3d;
 }

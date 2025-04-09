@@ -36,38 +36,77 @@ export default function Login() {
   };
 
   return (
-    <div className="login-container">
-      <form onSubmit={handleLogin}>
-        <h2>Login</h2>
-        {error && <p style={{ color: "red" }}>{error}</p>}
+    <div className="pt-10 p-5 flex flex-col items-center h-screen bg-gray-200">
+      <img
+        src="/public/images/logo.png"
+        alt="Logo"
+        className="login-logo w-24 h-auto mx-auto mb-4"
+      />
+      <h2 className="text-center text-2xl font-bold">Sign into your account</h2>
+      <div className="login-container m-10 shadow-md px-5 py-5 w-full max-w-md bg-gray-100 rounded-lg">
+        <form onSubmit={handleLogin}>
+          {error && <p className="text-red-500 text-lg">{error}</p>}
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        <label>
+          <label htmlFor="email" className="block mb-2 font-medium text-lg">
+            Email
+          </label>
           <input
-            type="checkbox"
-            checked={rememberMe}
-            onChange={() => setRememberMe(!rememberMe)}
+            id="email"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="block w-full p-2 mb-4 border rounded text-lg"
           />
-          Remember Me
-        </label>
 
-        <button type="submit">Log In</button>
-      </form>
+          <label htmlFor="password" className="block mb-2 font-medium text-lg">
+            Password
+          </label>
+          <input
+            id="password"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="block w-full p-2 mb-4 border rounded text-lg"
+          />
+          <div className="flex justify-between items-center mb-4">
+            <label className="flex items-center  text-lg">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={() => setRememberMe(!rememberMe)}
+                className="mr-2"
+              />
+              Remember Me
+            </label>
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-frontier hover:underline text-lg hover:text-frontier-dark"
+              >
+                Forgot Password?
+              </button>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full p-2 text-white bg-frontier rounded hover:bg-frontier-dark text-lg"
+          >
+            Log In
+          </button>
+        </form>
+      </div>
+      <div className="flex-grow"></div>
+      <img
+        src="/public/images/phx_unifi_dark.png"
+        alt="Logo"
+        className="login-logo w-54 h-auto mx-auto mb-4 self-end"
+      />
     </div>
   );
 }

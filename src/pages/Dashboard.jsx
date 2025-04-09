@@ -4,6 +4,7 @@ import { supabase } from "../services/supabaseClient";
 export default function Dashboard() {
   const [profile, setProfile] = useState({ full_name: "", role: "" });
   const [isPanelOpen, setIsPanelOpen] = useState(false); // State to manage panel visibility
+  const [loading, setLoading] = useState(true); // State to track loading status
   const [roles, setRoles] = useState({
     supervisor: false,
     driving: false,
@@ -11,6 +12,8 @@ export default function Dashboard() {
     push: false,
     tow: false,
   }); // State for roles
+  const [shifts, setShifts] = useState([]);
+  const [userId, setUserId] = useState(null);
 
   // Function to determine the greeting based on the time of day
   const getGreeting = () => {
@@ -61,8 +64,70 @@ export default function Dashboard() {
     };
 
     fetchProfile();
+
+    const fetchUserAndShifts = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.error("Error getting user:", userError);
+        return;
+      }
+
+      setUserId(user.id);
+
+      const { data: shiftsData, error: shiftsError } = await supabase
+        .from("shifts")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("start_time", new Date().toISOString())
+        .order("start_time", { ascending: true });
+
+      if (shiftsError) {
+        console.error("Error fetching shifts:", shiftsError);
+      } else {
+        setShifts(shiftsData);
+      }
+    };
+
+    const loadData = async () => {
+      await fetchProfile();
+      await fetchUserAndShifts();
+      setLoading(false);
+    };
+
+    loadData();
   }, []);
 
+  if (loading) {
+    // Render loading screen while fetching data
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <div role="status">
+          <svg
+            aria-hidden="true"
+            className="inline w-18 h-18 text-gray-200 animate-spin dark:text-gray-600 fill-green-500"
+            viewBox="0 0 100 101"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+              fill="currentColor"
+            />
+            <path
+              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+              fill="currentFill"
+            />
+          </svg>
+          <span className="sr-only">Loading...</span>
+        </div>
+        <p className="mt-4 text-gray-700">Loading...</p>
+      </div>
+    );
+  }
   return (
     <div>
       <div className="top bg-slate-800 text-white p-4 shadow-lg flex justify-between items-center">
@@ -103,27 +168,27 @@ export default function Dashboard() {
                 )}
                 <div className="flex flex-wrap">
                   {roles.supervisor && (
-                    <div className="role-box bg-blue-500 text-white p-2 m-2 rounded">
+                    <div className="role-box text-white bg-red-500 border border-white font-medium rounded-lg text-sm px-1 py-1 text-center me-1 mb-1">
                       Supervisor
                     </div>
                   )}
                   {roles.driving && (
-                    <div className="role-box bg-green-500 text-white p-2 m-2 rounded">
+                    <div className="role-box text-white bg-emerald-500  border border-white  font-medium rounded-lg text-sm px-1 py-1 text-center me-1 mb-1">
                       Driving
                     </div>
                   )}
                   {roles.lm && (
-                    <div className="role-box bg-yellow-500 text-white p-2 m-2 rounded">
+                    <div className="role-box text-white bg-orange-500 border border-white font-medium rounded-lg text-sm px-1 py-1 text-center me-1 mb-1">
                       LM
                     </div>
                   )}
                   {roles.push && (
-                    <div className="role-box bg-red-500 text-white p-2 m-2 rounded">
+                    <div className="role-box text-white bg-blue-500 border border-white   font-medium rounded-lg text-sm px-1 py-1 text-center me-1 mb-1">
                       Push
                     </div>
                   )}
                   {roles.tow && (
-                    <div className="role-box bg-purple-500 text-white p-2 m-2 rounded">
+                    <div className="role-box bg-purple-500 border border-white text-white p-2 m-2 rounded">
                       Tow
                     </div>
                   )}
@@ -132,13 +197,71 @@ export default function Dashboard() {
             </div>
           </div>
           <p className="p-4">This is the content of the side panel.</p>
+          <button
+            onClick={() => {
+              supabase.auth.signOut().then(() => {
+                window.location.href = "/login"; // Redirect to login page
+              });
+            }}
+            className="logout bg-red-600 text-white font-medium text-center rounded-sm me-1 mb-1 px-1 py-1"
+          >
+            logout
+          </button>
         </div>
       </div>
-      <div className="flex flex-col items-center mt-4">
+      <div className="flex flex-col items-center m-4">
         <h1 className="text-2xl font-bold text-gray-800">
-          {greeting}, {profile.full_name}
+          {greeting}, {profile.full_name}!
         </h1>
-        <p>You are a {profile.role}</p>
+        <div className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md">
+          <h2 className="text-lg font-semibold mb-2">My upcoming shifts</h2>
+          {shifts.length === 0 ? (
+            <p>No upcoming shifts.</p>
+          ) : (
+            <ul className="space-y-2">
+              {shifts.map((shift) => (
+                <li key={shift.id} className="bg-white p-3 rounded shadow">
+                  <p>
+                    <strong>Role:</strong> {shift.role}
+                  </p>
+                  <p>
+                    <strong>When:</strong>{" "}
+                    {new Date(shift.start_time).toLocaleString()} -{" "}
+                    {new Date(shift.end_time).toLocaleTimeString()}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md">
+          <p className="text-gray-600 mt-2 p-2">
+            Shifts available on the trade board
+          </p>
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+            see more available shifts
+          </button>
+        </div>
+        <div className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md flex flex-col">
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+            everyone's schedule
+          </button>
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+            see who is scheduled right now
+          </button>
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+            request time off
+          </button>
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+            view staff list
+          </button>
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+            choose times I prefer to work
+          </button>
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+            Supervisor contact information
+          </button>
+        </div>
       </div>
     </div>
   );

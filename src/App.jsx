@@ -21,8 +21,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        {/* Redirect all unmatched routes to / */}
-        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );

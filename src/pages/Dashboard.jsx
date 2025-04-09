@@ -80,7 +80,7 @@ export default function Dashboard() {
 
       const { data: shiftsData, error: shiftsError } = await supabase
         .from("shifts")
-        .select("*")
+        .select("id, start_time, end_time, type, position")
         .eq("user_id", user.id)
         .gte("start_time", new Date().toISOString())
         .order("start_time", { ascending: true });
@@ -147,10 +147,11 @@ export default function Dashboard() {
         <div
           className={`side-panel fixed top-0 right-0 h-full w-64 bg-gray-100 text-white shadow-lg transition-transform duration-300 ${isPanelOpen ? "translate-x-0" : "translate-x-full"}`}
         >
-          <div className="bg-slate-800 flex">
+          <div className="bg-slate-800 flex p-4">
             <button
-              className="close-button absolute top-2 right-2 text-white"
               onClick={() => setIsPanelOpen(false)} // Close panel
+              className="close-button absolute pt-4 pr-4 top-2 right-2 text-white"
+              // Close panel
             >
               <img src="/icons/close.png" alt="Menu" className="h-6 w-6" />
             </button>
@@ -160,12 +161,14 @@ export default function Dashboard() {
                 alt="Profile Picture"
                 className="w-24 h-24 rounded-full object-cover"
               ></img>
-              <div className="roles">
+              <p className="font-semibold">{profile.full_name}</p>
+              <div>
                 {roles.admin && (
-                  <div className="role-box bg-red-500 text-white p-2 m-2 rounded">
-                    Admin
-                  </div>
+                  <div className="role-box text-red-500">Admin</div>
                 )}
+              </div>
+              <p>Unifi Aviation, Phoenix</p>
+              <div className="roles">
                 <div className="flex flex-wrap">
                   {roles.supervisor && (
                     <div className="role-box text-white bg-red-500 border border-white font-medium rounded-lg text-sm px-1 py-1 text-center me-1 mb-1">
@@ -196,21 +199,51 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <p className="p-4">This is the content of the side panel.</p>
-          <button
-            onClick={() => {
-              supabase.auth.signOut().then(() => {
-                window.location.href = "/login"; // Redirect to login page
-              });
-            }}
-            className="logout bg-red-600 text-white font-medium text-center rounded-sm me-1 mb-1 px-1 py-1"
-          >
-            logout
-          </button>
+          <div className="sidepanel-content p-4 flex flex-col items-center">
+            <div className="flex flex-col space-y-4 w-full max-w-sm p-6">
+              {["Help", "Bug Report", "Dashboard", "Settings"].map(
+                (text, index) => (
+                  <button
+                    key={index}
+                    className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
+                  >
+                    {text}
+                  </button>
+                )
+              )}
+            </div>
+            <button
+              onClick={() => {
+                supabase.auth.signOut().then(() => {
+                  window.location.href = "/login"; // Redirect to login page
+                });
+              }}
+              className="logout bg-red-600 text-white font-medium text-center rounded-sm me-1 mb-1 px-1 py-1"
+            >
+              <span>Logout</span>
+              <div className="ml-1 transition group-hover:translate-x-1">
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 15 15"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                >
+                  <path
+                    d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z"
+                    fill="currentColor"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
-      <div className="flex flex-col items-center m-4">
-        <h1 className="text-2xl font-bold text-gray-800">
+      <div className="flex flex-col items-center justify-center m-4">
+        <h1 className="text-xl font-bold text-gray-800 w-full whitespace-nowrap self-center justify-self-center text-center">
           {greeting}, {profile.full_name}!
         </h1>
         <div className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md">
@@ -218,47 +251,73 @@ export default function Dashboard() {
           {shifts.length === 0 ? (
             <p>No upcoming shifts.</p>
           ) : (
-            <ul className="space-y-2">
-              {shifts.map((shift) => (
-                <li key={shift.id} className="bg-white p-3 rounded shadow">
-                  <p>
-                    <strong>Role:</strong> {shift.role}
-                  </p>
-                  <p>
-                    <strong>When:</strong>{" "}
-                    {new Date(shift.start_time).toLocaleString()} -{" "}
-                    {new Date(shift.end_time).toLocaleTimeString()}
-                  </p>
-                </li>
-              ))}
+            <ul className="space-y-4">
+              {shifts.map((shift) => {
+                const startDate = new Date(shift.start_time); // Convert start_time to Date object
+                const endDate = new Date(shift.end_time); // Convert end_time to Date object
+                const dayOfWeek = startDate.toLocaleDateString("en-US", {
+                  weekday: "long",
+                }); // Get day of the week
+                const formattedDate = startDate.toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                }); // Format date without the year
+                const startTime = startDate.toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                }); // Format start time
+                const endTime = endDate.toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                }); // Format end time
+
+                return (
+                  <li
+                    key={shift.id}
+                    className="bg-white p-4 rounded-lg shadow-md border border-gray-200"
+                  >
+                    <p className="text-lg font-semibold text-gray-800">
+                      {dayOfWeek}, {formattedDate}
+                    </p>
+                    <p className="text-gray-600">{shift.position}</p>
+                    <p className="text-gray-800">
+                      {startTime} - {endTime}
+                    </p>
+                    <p className="text-gray-600">{shift.type}</p>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
-        <div className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md">
-          <p className="text-gray-600 mt-2 p-2">
+        <div className="bg-white shadow-md rounded-lg m-4 p-4 w-full max-w-md flex flex-col">
+          <p className="text-gray-800 text-lg font-semibold mb-2 mt-2 p-2">
             Shifts available on the trade board
           </p>
-          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
-            see more available shifts
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 :focusring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2">
+            see all available shifts
           </button>
         </div>
         <div className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md flex flex-col">
-          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 ">
             everyone's schedule
           </button>
-          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+          <button
+            onClick={() => (window.location.href = "/on-now")}
+            className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
+          >
             see who is scheduled right now
           </button>
-          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 ">
             request time off
           </button>
-          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 ">
             view staff list
           </button>
-          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 ">
             choose times I prefer to work
           </button>
-          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 ">
             Supervisor contact information
           </button>
         </div>

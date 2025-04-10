@@ -4,9 +4,16 @@ import { useNavigate } from "react-router-dom";
 const GITHUB_REPO = "BelistarE/phxunifischeduler";
 const GITHUB_API_URL = `https://api.github.com/repos/BelistarE/phxunifischeduler/issues`;
 const token = import.meta.env.VITE_GITHUB_TOKEN;
+import ReactMarkdown from "react-markdown";
+import { FaGithub } from "react-icons/fa";
 
 const BugReport = () => {
   const [issues, setIssues] = useState([]);
+  const [expandedIssueId, setExpandedIssueId] = useState(null);
+  const navigate = useNavigate();
+  const removeBoldText = (text) => {
+    return text.replace(/\*\*.*?\*\*/g, ""); // Remove everything inside ** **
+  };
   useEffect(() => {
     const fetchIssues = async () => {
       try {
@@ -71,16 +78,20 @@ const BugReport = () => {
       alert("Error submitting bug");
     }
   };
+  //handle expanding issues
+  const handleToggle = (id) => {
+    setExpandedIssueId((prevId) => (prevId === id ? null : id));
+  };
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="top w-full bg-slate-800 text-white p-4 shadow-lg flex items-center justify-between mb-6">
-        {" "}
+    <div className="flex flex-col h-screen justify-center items-center">
+      <div className="top w-full bg-slate-800 text-white p-4 shadow-lg flex items-center justify-between ">
+        {/* Header */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="40"
           height="40"
           viewBox="0 0 512 512"
-          onClick={() => window.history.back()}
+          onClick={() => navigate("/")}
           className="cursor-pointer"
         >
           <path
@@ -132,119 +143,153 @@ const BugReport = () => {
         </svg>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8 m-3 items-stretch">
-        {/* Bug Report Form */}
-        <div className="w-full md:w-1/2 flex flex-col">
-          <form
-            onSubmit={handleSubmit}
-            className="flex-grow space-y-6 bg-white p-6 shadow-lg rounded-xl border border-gray-200"
-          >
-            {/* What happened */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                What happened?
-              </label>
-              <textarea
-                name="whatHappened"
-                required
-                rows="4"
-                className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2"
-                placeholder="Describe the bug clearly and concisely."
-                value={formData.whatHappened}
-                onChange={handleChange}
-              />
-            </div>
+      <div className="flex-grow overflow-y-auto m-8 md:m-10 md:max-w-7xl mx-auto justify-center items-center">
+        <div className="flex flex-col md:flex-row gap-8 items-stretch overflow-visible m-3">
+          {/* Bug Report Form */}
+          <div className="w-full md:w-1/2 flex flex-col max-w-full  h-full ">
+            <form
+              onSubmit={handleSubmit}
+              className="flex-grow flex flex-col h-full bg-white p-6 rounded-xl shadow-lg overflow-hidden border border-gray-200"
+            >
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                🔧 Submit an Issue
+              </h2>
 
-            {/* Steps to reproduce */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Steps to reproduce
-              </label>
-              <textarea
-                name="steps"
-                rows="3"
-                className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2"
-                placeholder="List the steps to reproduce the behavior..."
-                value={formData.steps}
-                onChange={handleChange}
-              />
-            </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  What happened?
+                </label>
+                <textarea
+                  name="whatHappened"
+                  required
+                  rows="4"
+                  className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2"
+                  placeholder="Describe the bug clearly and concisely."
+                  value={formData.whatHappened}
+                  onChange={handleChange}
+                />
+              </div>
 
-            {/* Expected behavior */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Expected behavior
-              </label>
-              <input
-                name="expected"
-                type="text"
-                className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-frontier focus:border-frontier p-2"
-                placeholder="What did you expect to happen?"
-                value={formData.expected}
-                onChange={handleChange}
-              />
-            </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Steps to reproduce
+                </label>
+                <textarea
+                  name="steps"
+                  rows="3"
+                  className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2"
+                  placeholder="List the steps to reproduce the behavior..."
+                  value={formData.steps}
+                  onChange={handleChange}
+                />
+              </div>
 
-            {/* Environment */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Environment
-              </label>
-              <textarea
-                name="environment"
-                rows="2"
-                className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-frontier focus:border-frontier p-2"
-                placeholder="Browser, OS, device..."
-                value={formData.environment}
-                onChange={handleChange}
-              />
-            </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Expected behavior
+                </label>
+                <input
+                  name="expected"
+                  type="text"
+                  className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-frontier focus:border-frontier p-2"
+                  placeholder="What did you expect to happen?"
+                  value={formData.expected}
+                  onChange={handleChange}
+                />
+              </div>
 
-            {/* Submit button */}
-            <div className="flex justify-end mt-4">
-              <button
-                type="submit"
-                className="inline-flex items-center px-6 py-2 bg-frontier text-white font-semibold rounded-md hover:bg-frontier-dark transition-all"
-              >
-                Submit Bug
-              </button>
-            </div>
-          </form>
-          <div>
-            <div className="mt-8"></div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Environment
+                </label>
+                <textarea
+                  name="environment"
+                  rows="2"
+                  className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-frontier focus:border-frontier p-2"
+                  placeholder="Browser, OS, device..."
+                  value={formData.environment}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="flex justify-end mt-4">
+                <button
+                  type="submit"
+                  className="inline-flex items-center px-6 py-2 bg-frontier text-white font-semibold rounded-md hover:bg-frontier-dark transition-all"
+                >
+                  Submit Issue
+                </button>
+              </div>
+            </form>
           </div>
-        </div>
-        <div className="w-full md:w-1/2 flex flex-col">
-          <div className="flex-grow space-y-6 bg-white p-6 shadow-lg rounded-xl border border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              🐛 Known Bugs
-            </h2>
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-4">
-              {issues.length > 0 ? (
-                issues.map((issue) => (
-                  <div
-                    key={issue.id}
-                    className="border-l-4 border-red-500 pl-4"
-                  >
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {issue.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 line-clamp-3">
-                      {issue.body
-                        ? issue.body.slice(0, 150) + "..."
-                        : "No description"}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Last updated:{" "}
-                      {new Date(issue.updated_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-gray-400">
-                  No known bugs at the moment 🎉
-                </p>
-              )}
+          <div className="w-full md:w-1/2 flex flex-col max-w-full h-full overflow-visible min-h-0">
+            <div className="flex-grow space-y-6 bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                🐛 Known Bugs
+              </h2>
+
+              <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-4">
+                {issues.length > 0 ? (
+                  issues.map((issue) => {
+                    const isExpanded = issue.id === expandedIssueId;
+                    const truncatedBody = issue.body
+                      ? issue.body.slice(0, 160) + "..."
+                      : "No description";
+
+                    return (
+                      <div
+                        key={issue.id}
+                        className={`cursor-pointer border-l-4 ${
+                          isExpanded ? "border-yellow-400" : "border-red-500"
+                        } pl-4 transition-all duration-300 ease-in-out`}
+                        onClick={() => handleToggle(issue.id)}
+                      >
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {issue.title}
+                        </h3>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Last updated:{" "}
+                          {new Date(issue.updated_at).toLocaleDateString()}
+                        </p>
+
+                        <div
+                          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                            isExpanded ? "max-h-screen" : "max-h-16"
+                          }`}
+                        >
+                          {isExpanded ? (
+                            // Expanded view with full body rendered using ReactMarkdown
+                            <div className="mt-2 text-sm text-gray-700 prose prose-sm max-w-none break-words">
+                              <ReactMarkdown>{issue.body}</ReactMarkdown>
+                            </div>
+                          ) : (
+                            // Collapsed view with truncated body and styled text
+                            <p className="text-sm text-gray-600 line-clamp-3">
+                              {removeBoldText(truncatedBody)}{" "}
+                              {/* Remove bold text */}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-center text-gray-400">
+                    No known bugs at the moment 🎉
+                  </p>
+                )}
+              </div>
+              <div className="flex justify-center">
+                <a
+                  href="https://github.com/BelistarE/phxunifischeduler/issues" // Replace with your actual GitHub URL
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md shadow-sm transition-all duration-300 ease-in-out"
+                >
+                  <FaGithub className="mr-2 text-xl" />
+                  View issues on GitHub
+                </a>
+              </div>
             </div>
           </div>
         </div>

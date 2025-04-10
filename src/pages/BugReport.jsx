@@ -56,7 +56,7 @@ const BugReport = () => {
 
     const body = `**Steps to reproduce:**\n${steps}\n\n**Expected behavior:**\n${expected}\n\n**Environment:**\n${environment}`;
 
-    const res = await fetch("/api/submit-bug", {
+    const res = await fetch("/api/submit-bug.", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

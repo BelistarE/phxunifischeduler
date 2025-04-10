@@ -38,7 +38,8 @@ export default function Login() {
   return (
     <div className="pt-10 p-5 flex flex-col items-center h-screen bg-gray-200">
       <img
-        src="/public/images/logo.png"
+        src="
+      /images/logo.png"
         alt="Logo"
         className="login-logo w-24 h-auto mx-auto mb-4"
       />
@@ -103,7 +104,7 @@ export default function Login() {
       </div>
       <div className="flex-grow"></div>
       <img
-        src="/public/images/phx_unifi_dark.png"
+        src="/images/phx_unifi_dark.png"
         alt="Logo"
         className="login-logo w-54 h-auto mx-auto mb-4 self-end"
       />

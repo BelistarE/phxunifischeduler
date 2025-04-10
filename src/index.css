@@ -13,7 +13,7 @@ body {
   --color-theme-bg: #60696c;
   --color-button-main: #a2a9a9;
   --color-button-main-light: #cacece;
-  --color-button-main-lighter: #e4e7e7;
+  --color-button-main-lighter: #d7dada;
   --color-button1: #4e5a68;
   --color-button2: #8b7066;
   --color-button3: #475862;
@@ -23,4 +23,14 @@ body {
   --color-logout: #c66057;
   --color-logout-light: #d68f8a;
   --color-button-text: #494c50;
+}
+
+.back-panel {
+  background-color: rgba(0, 0, 0, 0.74);
+}
+button:hover {
+  cursor: pointer;
+}
+.hover {
+  cursor: pointer;
 }

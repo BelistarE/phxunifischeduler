@@ -1,8 +1,76 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
+const GITHUB_REPO = "BelistarE/phxunifischeduler";
+const GITHUB_API_URL = `https://api.github.com/repos/BelistarE/phxunifischeduler/issues`;
+const token = import.meta.env.VITE_GITHUB_TOKEN;
 
 const BugReport = () => {
+  const [issues, setIssues] = useState([]);
+  useEffect(() => {
+    const fetchIssues = async () => {
+      try {
+        const res = await fetch(GITHUB_API_URL, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) {
+          throw new Error("Failed to fetch issues");
+        }
+        const data = await res.json();
+        const filtered = data.filter((item) => !item.pull_request); // Exclude pull requests
+        setIssues(filtered);
+      } catch (err) {
+        console.error("Error fetching issues:", err);
+      }
+    };
+
+    fetchIssues();
+  }, []);
+
+  //issue form submit
+  const [formData, setFormData] = useState({
+    whatHappened: "",
+    steps: "",
+    expected: "",
+    environment: "",
+  });
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const title = form.querySelector('textarea[placeholder*="Describe"]').value;
+    const steps = form.querySelector(
+      'textarea[placeholder*="List the steps"]'
+    ).value;
+    const expected = form.querySelector('input[placeholder*="expect"]').value;
+    const environment = form.querySelector(
+      'textarea[placeholder*="Browser"]'
+    ).value;
+
+    const body = `**Steps to reproduce:**\n${steps}\n\n**Expected behavior:**\n${expected}\n\n**Environment:**\n${environment}`;
+
+    const res = await fetch("/api/submit-bug", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ title, body }),
+    });
+
+    if (res.ok) {
+      alert("Bug submitted!");
+      form.reset();
+    } else {
+      alert("Error submitting bug");
+    }
+  };
   return (
     <div className="flex flex-col items-center justify-center">
       <div className="top w-full bg-slate-800 text-white p-4 shadow-lg flex items-center justify-between mb-6">
@@ -34,9 +102,9 @@ const BugReport = () => {
           version="1.1"
           id="Layer_1"
           xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlnsXlink="http://www.w3.org/1999/xlink"
           viewBox="0 0 512 512"
-          xml:space="preserve"
+          xmlSpace="preserve"
         >
           <g>
             <g>
@@ -67,17 +135,24 @@ const BugReport = () => {
       <div className="flex flex-col md:flex-row gap-8 m-3 items-stretch">
         {/* Bug Report Form */}
         <div className="w-full md:w-1/2 flex flex-col">
-          <form className="flex-grow space-y-6 bg-white p-6 shadow-lg rounded-xl border border-gray-200">
+          <form
+            onSubmit={handleSubmit}
+            className="flex-grow space-y-6 bg-white p-6 shadow-lg rounded-xl border border-gray-200"
+          >
             {/* What happened */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 What happened?
               </label>
               <textarea
+                name="whatHappened"
+                required
                 rows="4"
                 className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2"
                 placeholder="Describe the bug clearly and concisely."
-              ></textarea>
+                value={formData.whatHappened}
+                onChange={handleChange}
+              />
             </div>
 
             {/* Steps to reproduce */}
@@ -86,10 +161,13 @@ const BugReport = () => {
                 Steps to reproduce
               </label>
               <textarea
+                name="steps"
                 rows="3"
                 className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2"
                 placeholder="List the steps to reproduce the behavior..."
-              ></textarea>
+                value={formData.steps}
+                onChange={handleChange}
+              />
             </div>
 
             {/* Expected behavior */}
@@ -98,26 +176,12 @@ const BugReport = () => {
                 Expected behavior
               </label>
               <input
+                name="expected"
                 type="text"
                 className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-frontier focus:border-frontier p-2"
                 placeholder="What did you expect to happen?"
-              />
-            </div>
-
-            {/* Screenshots */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Screenshots (optional)
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                className="block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-md file:border-0
-              file:text-sm file:font-semibold
-              file:bg-gray-100 file:text-gray-700
-              hover:file:bg-gray-200"
+                value={formData.expected}
+                onChange={handleChange}
               />
             </div>
 
@@ -127,21 +191,17 @@ const BugReport = () => {
                 Environment
               </label>
               <textarea
+                name="environment"
                 rows="2"
                 className="w-full rounded-md border border-gray-300 shadow-sm focus:ring-frontier focus:border-frontier p-2"
                 placeholder="Browser, OS, device..."
-              ></textarea>
+                value={formData.environment}
+                onChange={handleChange}
+              />
             </div>
 
             {/* Submit button */}
-            <div className="flex justify-between mt-4">
-              <button
-                type="button"
-                className="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-md hover:bg-gray-300 transition-all mr-2"
-                onClick={() => window.history.back()}
-              >
-                Go Back
-              </button>
+            <div className="flex justify-end mt-4">
               <button
                 type="submit"
                 className="inline-flex items-center px-6 py-2 bg-frontier text-white font-semibold rounded-md hover:bg-frontier-dark transition-all"
@@ -159,36 +219,32 @@ const BugReport = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               🐛 Known Bugs
             </h2>
-
             <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 space-y-4">
-              {/* Individual Bug (repeatable) */}
-              <div className="border-l-4 border-red-500 pl-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Title of the Bug
-                </h3>
-                <p className="text-sm text-gray-600">
-                  Short description of the bug. Mention affected functionality
-                  or edge cases.
+              {issues.length > 0 ? (
+                issues.map((issue) => (
+                  <div
+                    key={issue.id}
+                    className="border-l-4 border-red-500 pl-4"
+                  >
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {issue.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 line-clamp-3">
+                      {issue.body
+                        ? issue.body.slice(0, 150) + "..."
+                        : "No description"}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Last updated:{" "}
+                      {new Date(issue.updated_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-gray-400">
+                  No known bugs at the moment 🎉
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Last updated: Apr 9, 2025
-                </p>
-              </div>
-
-              <div className="border-l-4 border-yellow-400 pl-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Another Bug Title
-                </h3>
-                <p className="text-sm text-gray-600">
-                  This is another placeholder for a known bug in the system.
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Reported on: Apr 5, 2025
-                </p>
-              </div>
-
-              {/* Empty state if no bugs are present */}
-              {/* <p className="text-center text-gray-400">No known bugs at the moment 🎉</p> */}
+              )}
             </div>
           </div>
         </div>

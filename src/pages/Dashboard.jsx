@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import AboutPanel from "../components/AboutPanel";
+import CurrentShift from "../components/CurrentShift";
 import { useLocation } from "react-router-dom";
 
 export default function Dashboard() {
@@ -19,7 +20,7 @@ export default function Dashboard() {
   const [shifts, setShifts] = useState([]);
   const [userId, setUserId] = useState(null);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-
+  const [currentShift, setCurrentShift] = useState(null);
   const location = useLocation(); // Get the current location
 
   const isActive = (path) => location.pathname === path; // Check if the current path matches
@@ -91,13 +92,43 @@ export default function Dashboard() {
         .from("shifts")
         .select("id, start_time, end_time, type, position")
         .eq("user_id", user.id)
-        .gte("start_time", new Date().toISOString())
-        .order("start_time", { ascending: true });
+        .gte("end_time", new Date().toISOString())
+
+        .order("end_time", { ascending: true });
 
       if (shiftsError) {
         console.error("Error fetching shifts:", shiftsError);
       } else {
-        setShifts(shiftsData);
+        const nowUTC = new Date();
+
+        // Find the current shift
+        const current = shiftsData.find((shift) => {
+          const startTimeUTC = new Date(shift.start_time);
+          const endTimeUTC = new Date(shift.end_time);
+
+          const startTime = new Date(
+            startTimeUTC.toLocaleString("en-US", {
+              timeZone: "America/Phoenix",
+            })
+          );
+          const endTime = new Date(
+            endTimeUTC.toLocaleString("en-US", { timeZone: "America/Phoenix" })
+          );
+          const now = new Date(
+            nowUTC.toLocaleString("en-US", { timeZone: "America/Phoenix" })
+          );
+
+          return startTime <= now && endTime >= now;
+        });
+
+        setCurrentShift(current);
+
+        // Filter out the current shift from upcoming shifts
+        const upcomingShifts = current
+          ? shiftsData.filter((shift) => shift.id !== current.id)
+          : shiftsData;
+
+        setShifts(upcomingShifts);
       }
     };
 
@@ -140,7 +171,7 @@ export default function Dashboard() {
     );
   }
   return (
-    <div>
+    <div className="h-screen flex flex-col">
       {/* Overlay to block clicks outside the side panel */}
       {isPanelOpen && (
         <div
@@ -419,7 +450,7 @@ export default function Dashboard() {
       </div>
       <AboutPanel isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
       <div
-        className={`flex flex-col items-center justify-center m-4
+        className={`flex flex-col items-center justify-center overflow-y-auto pt-35
         }`}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
@@ -427,101 +458,104 @@ export default function Dashboard() {
           }
         }}
       >
-        <h1 className="text-xl font-bold text-gray-800 w-full whitespace-nowrap self-center justify-self-center text-center">
-          {greeting}, {profile.full_name}!
-        </h1>
-        <div className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md">
-          <h2 className="text-lg font-semibold mb-2">My upcoming shifts</h2>
-          {shifts.length === 0 ? (
-            <p>No upcoming shifts.</p>
-          ) : (
-            <ul className="space-y-4">
-              {shifts.map((shift) => {
-                const startDate = new Date(shift.start_time); // Convert start_time to Date object
-                const endDate = new Date(shift.end_time); // Convert end_time to Date object
-                const dayOfWeek = startDate.toLocaleDateString("en-US", {
-                  weekday: "long",
-                }); // Get day of the week
-                const formattedDate = startDate.toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                }); // Format date without the year
-                const startTime = startDate.toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                }); // Format start time
-                const endTime = endDate.toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                }); // Format end time
+        <div className="w-full p-4 flex flex-col items-center justify-center">
+          <h1 className="text-xl font-bold text-gray-800 w-full whitespace-nowrap self-center justify-self-center text-center">
+            {greeting}, {profile.full_name}!
+          </h1>
+          <CurrentShift currentShift={currentShift} />
+          <div className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md">
+            <h2 className="text-lg font-semibold mb-2">My upcoming shifts</h2>
+            {shifts.length === 0 ? (
+              <p>No upcoming shifts.</p>
+            ) : (
+              <ul className="space-y-4">
+                {shifts.map((shift) => {
+                  const startDate = new Date(shift.start_time); // Convert start_time to Date object
+                  const endDate = new Date(shift.end_time); // Convert end_time to Date object
+                  const dayOfWeek = startDate.toLocaleDateString("en-US", {
+                    weekday: "long",
+                  }); // Get day of the week
+                  const formattedDate = startDate.toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                  }); // Format date without the year
+                  const startTime = startDate.toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }); // Format start time
+                  const endTime = endDate.toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }); // Format end time
 
-                return (
-                  <li
-                    key={shift.id}
-                    className="bg-white p-4 rounded-lg shadow-md border border-gray-200"
-                  >
-                    <p className="text-lg font-semibold text-gray-800">
-                      {dayOfWeek}, {formattedDate}
-                    </p>
-                    <p className="text-gray-600">{shift.position}</p>
-                    <p className="text-gray-800">
-                      {startTime} - {endTime}
-                    </p>
-                    <p className="text-gray-600">{shift.type}</p>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-        <div className="bg-white shadow-md rounded-lg m-4 p-4 w-full max-w-md flex flex-col">
-          <p className="text-gray-800 text-lg font-semibold mb-2 mt-2 p-2">
-            Shifts available on the trade board
-          </p>
-          <button
-            onClick={() => navigate("/available-shifts")}
-            className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 :focusring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
+                  return (
+                    <li
+                      key={shift.id}
+                      className="bg-white p-4 rounded-lg shadow-md border border-gray-200"
+                    >
+                      <p className="text-lg font-semibold text-gray-800">
+                        {dayOfWeek}, {formattedDate}
+                      </p>
+                      <p className="text-gray-600">{shift.position}</p>
+                      <p className="text-gray-800">
+                        {startTime} - {endTime}
+                      </p>
+                      <p className="text-gray-600">{shift.type}</p>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+          <div className="bg-white shadow-md rounded-lg mt-4 p-4 w-full max-w-md flex flex-col">
+            <p className="text-gray-800 text-lg font-semibold mb-2 mt-2 p-2">
+              Shifts available on the trade board
+            </p>
+            <button
+              onClick={() => navigate("/available-shifts")}
+              className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 :focusring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2"
+            >
+              see all available shifts
+            </button>
+          </div>
+          <div
+            onClick={() => navigate("/everyones-schedule")}
+            className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md flex flex-col"
           >
-            see all available shifts
-          </button>
-        </div>
-        <div
-          onClick={() => navigate("/everyones-schedule")}
-          className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md flex flex-col"
-        >
-          <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 ">
-            everyone's schedule
-          </button>
-          <button
-            onClick={() => (window.location.href = "/on-now")}
-            className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
-          >
-            see who is scheduled right now
-          </button>
-          <button
-            onClick={() => navigate("/request-time-off")}
-            className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
-          >
-            request time off
-          </button>
-          <button
-            onClick={() => navigate("/staff-list")}
-            className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
-          >
-            view staff list
-          </button>
-          <button
-            onClick={() => navigate("/settings")}
-            className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
-          >
-            choose times I prefer to work
-          </button>
-          <button
-            onClick={() => navigate("/contact-info")}
-            className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
-          >
-            Supervisor contact information
-          </button>
+            <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 ">
+              everyone's schedule
+            </button>
+            <button
+              onClick={() => (window.location.href = "/on-now")}
+              className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
+            >
+              see who is scheduled right now
+            </button>
+            <button
+              onClick={() => navigate("/request-time-off")}
+              className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
+            >
+              request time off
+            </button>
+            <button
+              onClick={() => navigate("/staff-list")}
+              className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
+            >
+              view staff list
+            </button>
+            <button
+              onClick={() => navigate("/settings")}
+              className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
+            >
+              choose times I prefer to work
+            </button>
+            <button
+              onClick={() => navigate("/contact-info")}
+              className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
+            >
+              Supervisor contact information
+            </button>
+          </div>
         </div>
       </div>
     </div>

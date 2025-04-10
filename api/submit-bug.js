@@ -1,5 +1,3 @@
-const token = import.meta.env.VITE_GITHUB_TOKEN;
-
 export default async function handler(req, res) {
   if (req.method === "POST") {
     const { title, body } = req.body;

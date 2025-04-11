@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import UnderConstruction from "./pages/UnderConstruction";
 import BugReport from "./pages/BugReport";
+import AdminUsers from "./pages/AdminUsers";
 
 export default function App() {
   return (
@@ -29,6 +30,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <BugReport />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute>
+              <AdminUsers />
             </ProtectedRoute>
           }
         />

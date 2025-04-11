@@ -64,18 +64,6 @@ const CurrentShift = ({ currentShift }) => {
             className="bg-frontier-light h-2.5 rounded-full "
             style={{ width: `${currentProgress}%` }}
           ></div>
-          {/* Line pointing to the current progress */}
-          <div
-            className="absolute top-full left-0 transform -translate-y-1"
-            style={{ right: `${currentProgress}%` }}
-          >
-            <p className="text-gray-600 text-xs text-center mt-3">
-              {currentTime.toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
         </div>
       </div>
     </div>

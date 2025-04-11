@@ -9,6 +9,8 @@ body {
 @theme {
   --color-frontier: #28714a;
   --color-frontier-light: #3a8b5c;
+  --color-frontier-lighter: #64b48c;
+  --color-frontier-lightest: #98cdaa;
   --color-frontier-dark: #1e4a3d;
   --color-theme-bg: #60696c;
   --color-button-main: #a2a9a9;

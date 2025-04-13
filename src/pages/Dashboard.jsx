@@ -556,15 +556,16 @@ export default function Dashboard() {
               onClick={() => navigate("/everyones-schedule")}
               className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md flex flex-col"
             >
-              <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 ">
-                everyone's schedule
-              </button>
               <button
                 onClick={() => (window.location.href = "/on-now")}
                 className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
               >
                 see who is scheduled right now
               </button>
+              <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 ">
+                everyone's schedule
+              </button>
+
               <button
                 onClick={() => navigate("/request-time-off")}
                 className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "

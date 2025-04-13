@@ -14,45 +14,25 @@ const AddUser = () => {
     const token = uuidv4();
 
     try {
-      // 1. Add to pending table
-      const { error } = await supabase.from("pending").insert({
-        name,
-        email,
-        token,
-      });
-
-      if (error) {
-        console.error("Error inserting pending user:", error);
-        alert("Something went wrong adding the user.");
-        return;
-      }
-
-      // 2. Call backend function to send email
       const response = await fetch(
         "https://ikkdbqlqmnzlwcboopin.functions.supabase.co/send-invite",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`, // Add the Supabase key
           },
           body: JSON.stringify({ name, email, token }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to send email");
-      }
+      if (!response.ok) throw new Error("Failed to send invite");
 
-      const data = await response.json();
-      console.log("Email sent successfully:", data);
-
-      // 3. Reset form
+      alert("User invited!");
       setName("");
       setEmail("");
-      alert("User invited!");
     } catch (err) {
-      console.error("Error sending invite:", err.message);
-      alert("Failed to send invite.");
+      console.error("Error sending invite:", err);
     }
   };
 

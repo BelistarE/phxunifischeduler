@@ -28,7 +28,7 @@ const CurrentShift = ({ currentShift }) => {
   // Adjust the progress calculation by ensuring time is in local zone
   const currentProgress = Math.min(
     100,
-    ((currentTimeUTC - startTime) / (endTime - startTime)) * 100
+    ((currentTime - startTime) / (endTime - startTime)) * 100
   );
 
   return (

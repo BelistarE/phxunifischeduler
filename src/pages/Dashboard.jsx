@@ -84,33 +84,28 @@ export default function Dashboard() {
         .from("shifts")
         .select("id, start_time, end_time, type, position")
         .eq("user_id", user.id)
-        .gte("end_time", new Date().toISOString())
-
         .order("end_time", { ascending: true });
 
       if (shiftsError) {
         console.error("Error fetching shifts:", shiftsError);
       } else {
-        const nowUTC = new Date();
-
-        // Find the current shift
         const current = shiftsData.find((shift) => {
-          const startTimeUTC = new Date(shift.start_time);
-          const endTimeUTC = new Date(shift.end_time);
-
-          const startTime = new Date(
-            startTimeUTC.toLocaleString("en-US", {
-              timeZone: "America/Phoenix",
-            })
-          );
-          const endTime = new Date(
-            endTimeUTC.toLocaleString("en-US", { timeZone: "America/Phoenix" })
-          );
           const now = new Date(
-            nowUTC.toLocaleString("en-US", { timeZone: "America/Phoenix" })
+            new Date().toLocaleString("en-US", { timeZone: "America/Phoenix" })
           );
+
+          const startTime = new Date(shift.start_time);
+          const endTime = new Date(shift.end_time);
+
+          console.log("Start Time:", startTime);
+          console.log("End Time:", endTime);
+          console.log("Current Time:", now);
 
           return startTime <= now && endTime >= now;
+          console.log("Start Time:", startTime);
+          console.log("End Time:", endTime);
+          console.log("Current Time:", now);
+          // Check if the current time falls within the shift's start and end times
         });
 
         setCurrentShift(current);

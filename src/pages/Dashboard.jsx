@@ -42,10 +42,21 @@ export default function Dashboard() {
   const greeting = getGreeting();
   useEffect(() => {
     const fetchProfile = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.error("Error getting user:", userError);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("profiles")
         .select("full_name, role, title, driving, lm, push, tow")
-        .single();
+        .eq("id", user.id) // Match the user's auth ID with the profile ID
+        .single(); // Ensure only one profile is returned
 
       if (error) {
         console.error("Error fetching profile:", error);
@@ -89,33 +100,31 @@ export default function Dashboard() {
       if (shiftsError) {
         console.error("Error fetching shifts:", shiftsError);
       } else {
-        const current = shiftsData.find((shift) => {
-          const now = new Date(
-            new Date().toLocaleString("en-US", { timeZone: "America/Phoenix" })
-          );
+        const now = new Date(
+          new Date().toLocaleString("en-US", { timeZone: "America/Phoenix" })
+        );
 
+        // Filter out past shifts
+        const upcomingShifts = shiftsData.filter(
+          (shift) => new Date(shift.end_time) >= now
+        );
+
+        // Find the current shift
+        const current = upcomingShifts.find((shift) => {
           const startTime = new Date(shift.start_time);
           const endTime = new Date(shift.end_time);
 
-          console.log("Start Time:", startTime);
-          console.log("End Time:", endTime);
-          console.log("Current Time:", now);
-
           return startTime <= now && endTime >= now;
-          console.log("Start Time:", startTime);
-          console.log("End Time:", endTime);
-          console.log("Current Time:", now);
-          // Check if the current time falls within the shift's start and end times
         });
 
         setCurrentShift(current);
 
-        // Filter out the current shift from upcoming shifts
-        const upcomingShifts = current
-          ? shiftsData.filter((shift) => shift.id !== current.id)
-          : shiftsData;
+        // Remove the current shift from the list of upcoming shifts
+        const filteredShifts = current
+          ? upcomingShifts.filter((shift) => shift.id !== current.id)
+          : upcomingShifts;
 
-        setShifts(upcomingShifts);
+        setShifts(filteredShifts);
       }
     };
 

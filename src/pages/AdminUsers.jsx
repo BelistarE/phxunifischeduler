@@ -15,12 +15,14 @@ import {
   Settings,
   CalendarClock,
   Search,
+  ArrowLeft,
 } from "lucide-react";
 
 const AdminUsers = () => {
   const [loading, setLoading] = useState(false); // State to track loading status
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const navigate = useNavigate(); // Hook to programmatically navigate
   if (loading) {
     // Render loading screen while fetching data
     return (
@@ -29,9 +31,12 @@ const AdminUsers = () => {
       </div>
     );
   }
-  const SidebarItem = ({ icon, label }) => {
+  const SidebarItem = ({ icon, label, onClick }) => {
     return (
-      <div className="flex items-center px-5 py-4  rounded-md cursor-pointer hover:bg-frontier-lighter  transition-colors text-gray-800 hover:frontier-dark font-large">
+      <div
+        onClick={onClick}
+        className="flex items-center px-5 py-4  rounded-md cursor-pointer hover:bg-frontier-lighter  transition-colors text-gray-800 hover:frontier-dark font-large"
+      >
         <span className="mr-2">{icon}</span>
         {label}
       </div>
@@ -81,19 +86,24 @@ const AdminUsers = () => {
           <SidebarItem icon={<Search size={18} />} label="Sort By" />
           <div className="rounded-md bg-gray-700 flex flex-col justify-center ">
             <div
-              className="flex items-center px-5 py-4 cursor-pointer text-bold text-gray-300 hover:bg-gray-200 transition-colors rounded-t-md hover:text-gray-700"
+              className="flex items-center px-5 py-4 cursor-pointer text-bold text-gray-300 hover:bg-frontier-lighter transition-colors rounded-t-md hover:text-gray-700"
               onClick={() => setIsAddUserOpen(true)}
             >
               <span className="mr-2">{<UserPlus size={18} />}</span>
               Add a User
             </div>
 
-            <div className="flex items-center px-5 py-4  cursor-pointer  text-red-300  hover:bg-gray-200 rounded-b-md  transition-colors hover:text-red-600">
+            <div className="flex items-center px-5 py-4  cursor-pointer  text-red-300  hover:bg-red-400 rounded-b-md  transition-colors hover:text-gray-600">
               <span className="mr-2">{<UserMinus size={18} />}</span>
               Remove a User
             </div>
           </div>
           <SidebarItem icon={<Settings size={18} />} label="Settings" />
+          <SidebarItem
+            onClick={() => navigate(-1)}
+            icon={<ArrowLeft size={18} />}
+            label="Back"
+          />
         </nav>
       </div>
 
@@ -116,6 +126,12 @@ const AdminUsers = () => {
             <Menu size={26} />
           </button>
           <h2 className="text-lg font-semibold text-gray-800">Admin Tools</h2>
+          <button
+            onClick={() => navigate(-1)}
+            className="text-frontier focus:outline-none"
+          >
+            <ArrowLeft size={26} className="text-frontier" />
+          </button>
         </div>
 
         {/* Main area */}

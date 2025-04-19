@@ -18,7 +18,7 @@ const AdminPanel = () => {
         </Link>
 
         <Link
-          to="/admin/schedules"
+          to="/admin/manage-schedules"
           className="flex items-center gap-2 p-2 rounded-lg hover:bg-red-100 transition"
         >
           <Calendar size={18} />

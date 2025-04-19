@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import Loading from "../components/Loading";
 import AddUser from "../components/AddUser";
+import AdminDashHeader from "../components/AdminDashHeader";
 //import RemoveUser from "../components/RemoveUser";
 // Importing icons from lucide-react
 import {
@@ -106,7 +107,6 @@ const AdminUsers = () => {
           />
         </nav>
       </div>
-
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -114,7 +114,6 @@ const AdminUsers = () => {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-
       {/* Main content */}
       <div className="flex flex-col flex-1 overflow-y-auto">
         {/* Mobile header */}

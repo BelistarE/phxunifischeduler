@@ -9,7 +9,6 @@ import { FaGithub } from "react-icons/fa";
 const Users = () => {
   const [loading, setLoading] = useState(true); // State to track loading status
   const [profiles, setProfiles] = useState([]); // State to store profiles
-  const [editMode, setEditMode] = useState({}); // State to track edit mode for each profile
   const [editingProfileId, setEditingProfileId] = useState(null);
   const [editedName, setEditedName] = useState("");
   const [editedRoles, setEditedRoles] = useState({
@@ -155,22 +154,31 @@ const Users = () => {
             className="bg-white shadow-md rounded-lg p-4 border border-gray-200 flex flex-row items-center justify-between"
           >
             {editingProfileId === profile.id ? (
-              <div className="flex-1 flex flex-col gap-4">
+              <div className="flex-1 flex flex-col gap-4 w-full">
                 {/* Edit Form */}
-                <div className="mb-2">
-                  <label
-                    htmlFor={`name-${profile.id}`}
-                    className="block text-gray-700 text-sm font-bold mb-2"
-                  >
-                    Name:
-                  </label>
-                  <input
-                    type="text"
-                    id={`name-${profile.id}`}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    value={editedName}
-                    onChange={handleNameChange}
-                  />
+                <div className="mb-2 flex flex-row items-center gap-2">
+                  {profile.img_url && (
+                    <img
+                      src={profile.img_url}
+                      alt={`${profile.full_name}'s profile`}
+                      className="w-16 h-16 rounded-full mr-4"
+                    />
+                  )}
+                  <div className="flex flex-col">
+                    <label
+                      htmlFor={`name-${profile.id}`}
+                      className="block text-gray-700 text-sm font-bold mb-2"
+                    >
+                      Name:
+                    </label>
+                    <input
+                      type="text"
+                      id={`name-${profile.id}`}
+                      className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      value={editedName}
+                      onChange={handleNameChange}
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -178,62 +186,87 @@ const Users = () => {
                     Roles:
                   </label>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    <label>
-                      <input
-                        type="radio"
-                        name={`title-${profile.id}`}
-                        value={1}
-                        checked={editedRoles.title === 1}
-                        onChange={(e) =>
-                          handleRoleChange("title", parseInt(e.target.value))
-                        }
-                      />
-                      <span className="ml-1 bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded">
-                        Supervisor
-                      </span>
-                    </label>
-                    <label>
-                      <input
-                        type="radio"
-                        name={`title-${profile.id}`}
-                        value={2}
-                        checked={editedRoles.title === 2}
-                        onChange={(e) =>
-                          handleRoleChange("title", parseInt(e.target.value))
-                        }
-                      />
-                      <span className="ml-1 bg-pink-100 text-pink-800 text-sm font-medium px-2 py-1 rounded">
-                        Ops
-                      </span>
-                    </label>
-                    <label>
-                      <input
-                        type="radio"
-                        name={`driving-${profile.id}`}
-                        value={0}
-                        checked={editedRoles.driving === 0}
-                        onChange={(e) =>
-                          handleRoleChange("driving", parseInt(e.target.value))
-                        }
-                      />
-                      <span className="ml-1 bg-green-100 text-green-800 text-sm font-medium px-2 py-1 rounded">
-                        No Driving
-                      </span>
-                    </label>
-                    <label>
-                      <input
-                        type="radio"
-                        name={`driving-${profile.id}`}
-                        value={1}
-                        checked={editedRoles.driving === 1}
-                        onChange={(e) =>
-                          handleRoleChange("driving", parseInt(e.target.value))
-                        }
-                      />
-                      <span className="ml-1 bg-lime-100 text-lime-800 text-sm font-medium px-2 py-1 rounded">
-                        Driving
-                      </span>
-                    </label>
+                    <div className="flex flex-col gap-2 mb-2">
+                      <label>
+                        <input
+                          type="radio"
+                          name={`title-${profile.id}`}
+                          value={1}
+                          checked={editedRoles.title === 1}
+                          onChange={(e) =>
+                            handleRoleChange("title", parseInt(e.target.value))
+                          }
+                        />
+                        <span className="ml-1 bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded">
+                          Supervisor
+                        </span>
+                      </label>
+                      <label>
+                        <input
+                          type="radio"
+                          name={`title-${profile.id}`}
+                          value={2}
+                          checked={editedRoles.title === 2}
+                          onChange={(e) =>
+                            handleRoleChange("title", parseInt(e.target.value))
+                          }
+                        />
+                        <span className="ml-1 bg-pink-100 text-pink-800 text-sm font-medium px-2 py-1 rounded">
+                          Ops
+                        </span>
+                      </label>
+                      <label>
+                        <input
+                          type="radio"
+                          name={`title-${profile.id}`}
+                          value={3}
+                          checked={editedRoles.title === 2}
+                          onChange={(e) =>
+                            handleRoleChange("title", parseInt(e.target.value))
+                          }
+                        />
+                        <span className="ml-1 bg-orange-100 text-orange-800 text-sm font-medium px-2 py-1 rounded">
+                          Ramp
+                        </span>
+                      </label>
+                    </div>
+                    <div className="flex flex-col gap-2 mb-2">
+                      <label>
+                        <input
+                          type="radio"
+                          name={`driving-${profile.id}`}
+                          value={0}
+                          checked={editedRoles.driving === 0}
+                          onChange={(e) =>
+                            handleRoleChange(
+                              "driving",
+                              parseInt(e.target.value)
+                            )
+                          }
+                        />
+                        <span className="ml-1 bg-green-100 text-green-800 text-sm font-medium px-2 py-1 rounded">
+                          No Driving
+                        </span>
+                      </label>
+                      <label>
+                        <input
+                          type="radio"
+                          name={`driving-${profile.id}`}
+                          value={1}
+                          checked={editedRoles.driving === 1}
+                          onChange={(e) =>
+                            handleRoleChange(
+                              "driving",
+                              parseInt(e.target.value)
+                            )
+                          }
+                        />
+                        <span className="ml-1 bg-lime-100 text-lime-800 text-sm font-medium px-2 py-1 rounded">
+                          Driving
+                        </span>
+                      </label>
+                    </div>
+
                     <label>
                       <input
                         type="checkbox"
@@ -293,24 +326,29 @@ const Users = () => {
               </div>
             ) : (
               <>
-                {/* Static Profile Display (No changes needed here based on the int role clarification) */}
-                {profile.img_url && (
-                  <img
-                    src={profile.img_url}
-                    alt={`${profile.full_name}'s profile`}
-                    className="w-16 h-16 rounded-full mr-4"
-                  />
-                )}
-
-                <div className="flex-1 ml-4">
-                  <div className="flex items-center gap-4 mb-2">
-                    <p className="text-lg font-semibold">{profile.full_name}</p>
-                    {profile.role === "admin" && (
-                      <p className="text-gray-600">Admin</p>
+                <div className="flex flex-col w-full">
+                  {/* Static Profile Display (No changes needed here based on the int role clarification) */}
+                  <div className="flex flex-row items-center gap-2">
+                    {profile.img_url && (
+                      <img
+                        src={profile.img_url}
+                        alt={`${profile.full_name}'s profile`}
+                        className="w-16 h-16 rounded-full"
+                      />
                     )}
-                  </div>
 
-                  <div>
+                    <div className="flex-1 ml-4">
+                      <div className="flex items-center gap-4 mb-2">
+                        <p className="text-lg font-semibold">
+                          {profile.full_name}
+                        </p>
+                        {profile.role === "admin" && (
+                          <p className="text-gray-600">Admin</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-row items-center justify-between gap-2 mt-2">
                     <div className="flex flex-wrap gap-2 mt-2">
                       {profile.title === 1 && (
                         <span className="bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded">
@@ -320,6 +358,11 @@ const Users = () => {
                       {profile.title === 2 && (
                         <span className="bg-pink-100 text-pink-800 text-sm font-medium px-2 py-1 rounded">
                           Ops
+                        </span>
+                      )}
+                      {profile.title === 3 && (
+                        <span className="bg-orange-100 text-orange-800 text-sm font-medium px-2 py-1 rounded">
+                          Ramp
                         </span>
                       )}
                       {profile.driving === 0 && (
@@ -338,20 +381,18 @@ const Users = () => {
                         </span>
                       )}
                       {profile.tow === 1 && (
-                        <span className="bg-purple-100 text-orange-800 text-sm font-medium px-2 py-1 rounded">
+                        <span className="bg-purple-100 text-purple-800 text-sm font-medium px-2 py-1 rounded">
                           Tow
                         </span>
                       )}
                     </div>
+                    <button
+                      className="bg-blue-500 hover:bg-blue-600 text-white font-small py-1 px-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
+                      onClick={() => handleEditClick(profile)}
+                    >
+                      Edit
+                    </button>
                   </div>
-                </div>
-                <div>
-                  <button
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-small py-1 px-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
-                    onClick={() => handleEditClick(profile)}
-                  >
-                    Edit
-                  </button>
                 </div>
               </>
             )}

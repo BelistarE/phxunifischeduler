@@ -7,7 +7,9 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import UnderConstruction from "./pages/UnderConstruction";
 import BugReport from "./pages/BugReport";
 import AdminUsers from "./pages/AdminUsers";
-
+import ManageSchedules from "./pages/ManageSchedules";
+import AdminDashboard from "./pages/AdminDashboard";
+import TimeOffRequests from "./pages/TimeOffRequests";
 export default function App() {
   return (
     <BrowserRouter>
@@ -38,6 +40,30 @@ export default function App() {
           element={
             <ProtectedRoute>
               <AdminUsers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/manage-schedules"
+          element={
+            <ProtectedRoute>
+              <ManageSchedules />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/time-off-requests"
+          element={
+            <ProtectedRoute>
+              <TimeOffRequests />
             </ProtectedRoute>
           }
         />

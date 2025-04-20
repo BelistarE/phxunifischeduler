@@ -45,7 +45,11 @@ const AdminUsers = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex flex-col h-screen overflow-hidden bg-gray-50">
+      {/* Display AdminDashHeader only if not on mobile */}
+      <div className="hidden md:block">
+        <AdminDashHeader />
+      </div>
       {/* Dark Overlay and AddUser Modal */}
       {isAddUserOpen && (
         <>
@@ -70,73 +74,79 @@ const AdminUsers = () => {
         </>
       )}
       {/* Sidebar */}
-      <div
-        className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-gray-300  p-4 transition-transform duration-300 ease-in-out 
+      <div className="flex md:flex-row flex-1">
+        <div
+          className={`fixed inset-y-0 left-0 z-30 w-64 transform bg-gray-300  p-4 transition-transform duration-300 ease-in-out 
             md:static md:translate-x-0 md:flex-shrink-0
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} rounded-tr-lg rounded-br-lg`}
-      >
-        <div className="mb-8 flex items-center space-x-2 px-2">
-          <Users className="text-gray-800" />
-          <h1 className="text-xl font-semibold text-gray-800">Manage Users</h1>
-        </div>
-        <nav className="space-y-2 text-sm">
-          <SidebarItem
-            icon={<CalendarClock size={18} />}
-            label="Manage Schedules"
-          />
-          <SidebarItem icon={<Search size={18} />} label="Sort By" />
-          <div className="rounded-md bg-gray-700 flex flex-col justify-center ">
-            <div
-              className="flex items-center px-5 py-4 cursor-pointer text-bold text-gray-300 hover:bg-frontier-lighter transition-colors rounded-t-md hover:text-gray-700"
-              onClick={() => setIsAddUserOpen(true)}
-            >
-              <span className="mr-2">{<UserPlus size={18} />}</span>
-              Add a User
-            </div>
-
-            <div className="flex items-center px-5 py-4  cursor-pointer  text-red-300  hover:bg-red-400 rounded-b-md  transition-colors hover:text-gray-600">
-              <span className="mr-2">{<UserMinus size={18} />}</span>
-              Remove a User
-            </div>
+        >
+          <div className="mb-8 flex items-center space-x-2 px-2">
+            <Users className="text-gray-800" />
+            <h1 className="text-xl font-semibold text-gray-800">
+              Manage Users
+            </h1>
           </div>
-          <SidebarItem icon={<Settings size={18} />} label="Settings" />
-          <SidebarItem
-            onClick={() => navigate(-1)}
-            icon={<ArrowLeft size={18} />}
-            label="Back"
-          />
-        </nav>
-      </div>
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-black opacity-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-      {/* Main content */}
-      <div className="flex flex-col flex-1 overflow-y-auto">
-        {/* Mobile header */}
-        <div className="p-4 border-b flex items-center justify-between md:hidden bg-white">
-          <button
-            className="text-frontier focus:outline-none"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu size={26} />
-          </button>
-          <h2 className="text-lg font-semibold text-gray-800">Admin Tools</h2>
-          <button
-            onClick={() => navigate(-1)}
-            className="text-frontier focus:outline-none"
-          >
-            <ArrowLeft size={26} className="text-frontier" />
-          </button>
-        </div>
+          <nav className="space-y-2 text-sm">
+            <SidebarItem
+              icon={<CalendarClock size={18} />}
+              label="Manage Schedules"
+            />
+            <SidebarItem icon={<Search size={18} />} label="Sort By" />
+            <div className="rounded-md bg-gray-700 flex flex-col justify-center ">
+              <div
+                className="flex items-center px-5 py-4 cursor-pointer text-bold text-gray-300 hover:bg-frontier-lighter transition-colors rounded-t-md hover:text-gray-700"
+                onClick={() => setIsAddUserOpen(true)}
+              >
+                <span className="mr-2">{<UserPlus size={18} />}</span>
+                Add a User
+              </div>
 
-        {/* Main area */}
-        <main className="flex-1 p-6">
-          <UsersPage />
-        </main>
+              <div className="flex items-center px-5 py-4  cursor-pointer  text-red-300  hover:bg-red-400 rounded-b-md  transition-colors hover:text-gray-600">
+                <span className="mr-2">{<UserMinus size={18} />}</span>
+                Remove a User
+              </div>
+            </div>
+            <SidebarItem icon={<Settings size={18} />} label="Settings" />
+            <SidebarItem
+              onClick={() => navigate(-1)}
+              icon={<ArrowLeft size={18} />}
+              label="Back"
+            />
+          </nav>
+        </div>
+        {/* Mobile overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-20 bg-black opacity-40 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        {/* Main content */}
+        <div className="flex flex-col flex-1 overflow-y-auto">
+          {/* Mobile header */}
+          <div className="p-4 border-b flex items-center justify-between md:hidden bg-white">
+            <button
+              className="text-frontier focus:outline-none"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu size={26} />
+            </button>
+            <h2 className="text-lg font-semibold text-gray-800">
+              Manage Users
+            </h2>
+            <button
+              onClick={() => navigate(-1)}
+              className="text-frontier focus:outline-none"
+            >
+              <ArrowLeft size={26} className="text-frontier" />
+            </button>
+          </div>
+
+          {/* Main area */}
+          <main className="flex-1 p-6">
+            <UsersPage />
+          </main>
+        </div>
       </div>
     </div>
   );

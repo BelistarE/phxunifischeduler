@@ -10,6 +10,7 @@ import AdminUsers from "./pages/AdminUsers";
 import ManageSchedules from "./pages/ManageSchedules";
 import AdminDashboard from "./pages/AdminDashboard";
 import TimeOffRequests from "./pages/TimeOffRequests";
+import ScheduleEveryone from "./pages/ScheduleEveryone";
 export default function App() {
   return (
     <BrowserRouter>
@@ -67,6 +68,16 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/schedule"
+          element={
+            <ProtectedRoute>
+              <ScheduleEveryone />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="*" element={<Navigate to="/under-contruction" />} />
       </Routes>
     </BrowserRouter>

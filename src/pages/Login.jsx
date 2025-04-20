@@ -41,7 +41,7 @@ export default function Login() {
         src="
       /images/logo.png"
         alt="Logo"
-        className="login-logo w-24 h-auto mx-auto mb-4"
+        className="login-logo h-24 w-auto mx-auto mb-4"
       />
       <h2 className="text-center text-2xl font-bold">Sign into your account</h2>
       <div className="login-container m-10 shadow-md px-5 py-5 w-full max-w-md bg-gray-100 rounded-lg">

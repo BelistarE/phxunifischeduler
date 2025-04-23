@@ -63,6 +63,13 @@ const Activate = () => {
       setError("Password must be at least 6 characters long.");
       return;
     }
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])/;
+    if (!passwordRegex.test(password)) {
+      setError(
+        "Password must contain at least one uppercase letter and one special character."
+      );
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -77,12 +84,15 @@ const Activate = () => {
         token,
       }),
     });
-
+    console.log("Raw response:", res);
     const data = await res.json();
     setLoading(false);
 
     if (!res.ok) {
-      setError(data.error);
+      const errorText = await res.text(); // Read the raw response text
+      console.error("Error response text:", errorText);
+      setError("Failed to activate account. Please try again.");
+      setLoading(false);
       return;
     }
 

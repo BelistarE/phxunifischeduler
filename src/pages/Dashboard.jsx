@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
-import AboutPanel from "../components/AboutPanel";
+
 import CurrentShift from "../components/CurrentShift";
 import { useLocation } from "react-router-dom";
 import AdminPanel from "../components/AdminPanel";
@@ -21,7 +21,7 @@ export default function Dashboard() {
   }); // State for roles
   const [shifts, setShifts] = useState([]);
   const [userId, setUserId] = useState(null);
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
+
   const [currentShift, setCurrentShift] = useState(null);
   const location = useLocation(); // Get the current location
 
@@ -177,7 +177,6 @@ export default function Dashboard() {
         ></div>
       )}
       <MainHeader />
-      <AboutPanel isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
       <div
         onClick={(e) => {
           if (e.target === e.currentTarget) {
@@ -254,17 +253,17 @@ export default function Dashboard() {
                 see all available shifts
               </button>
             </div>
-            <div
-              onClick={() => navigate("/schedule")}
-              className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md flex flex-col"
-            >
+            <div className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md flex flex-col">
               <button
                 onClick={() => (window.location.href = "/on-now")}
                 className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
               >
                 see who is scheduled right now
               </button>
-              <button className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 ">
+              <button
+                onClick={() => navigate("/schedule")}
+                className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 "
+              >
                 everyone's schedule
               </button>
 

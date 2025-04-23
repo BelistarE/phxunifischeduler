@@ -84,16 +84,12 @@ function ManageSchedules() {
               );
               acc[formattedDate] = shiftOnDay
                 ? {
-                    start_time: new Date(
-                      shiftOnDay.start_time
-                    ).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }),
-                    end_time: new Date(shiftOnDay.end_time).toLocaleTimeString(
-                      [],
-                      { hour: "2-digit", minute: "2-digit" }
-                    ),
+                    start_time: new Date(shiftOnDay.start_time)
+                      .toTimeString()
+                      .slice(0, 5),
+                    end_time: new Date(shiftOnDay.end_time)
+                      .toTimeString()
+                      .slice(0, 5),
 
                     id: shiftOnDay.id,
                   }
@@ -119,17 +115,43 @@ function ManageSchedules() {
     const userProfile = profilesWithWeeklyShifts.find(
       (profile) => profile.id === userId
     );
+
     if (userProfile) {
       const initialEditedShifts = {};
-      Object.entries(userProfile.weeklySchedule).forEach(([date, shift]) => {
-        initialEditedShifts[date] = {
-          start_time: shift?.start_time || "",
-          end_time: shift?.end_time || "",
+      const initialCommonSelections = {};
 
+      Object.entries(userProfile.weeklySchedule).forEach(([date, shift]) => {
+        const start_time = shift?.start_time || "";
+        const end_time = shift?.end_time || "";
+
+        initialEditedShifts[date] = {
+          start_time,
+          end_time,
           id: shift?.id || null,
         };
+
+        // Auto-check matching common shifts
+        const matchedKeys = Object.entries(COMMON_SHIFT_TIMES)
+          .filter(
+            ([key, range]) =>
+              range.start === start_time && range.end === end_time
+          )
+          .map(([key]) => key);
+
+        if (matchedKeys.length) {
+          initialCommonSelections[date] = matchedKeys;
+        }
       });
-      setEditedShifts({ ...editedShifts, [userId]: initialEditedShifts });
+
+      setEditedShifts((prev) => ({
+        ...prev,
+        [userId]: initialEditedShifts,
+      }));
+
+      setCommonShiftSelections((prev) => ({
+        ...prev,
+        [userId]: initialCommonSelections,
+      }));
     }
   };
 
@@ -142,6 +164,144 @@ function ManageSchedules() {
           ...prevEditedShifts?.[userId]?.[date],
           [field]: value,
         },
+      },
+    }));
+  };
+  //save shifts to supabase
+  const COMMON_SHIFT_TIMES = {
+    morning: { start: "04:00", end: "12:00" },
+    mid: { start: "11:00", end: "19:00" },
+    night: { start: "18:00", end: "02:00" }, // crosses midnight
+  };
+  const handleSaveShifts = async (userId) => {
+    const shiftsToUpdate = editedShifts[userId];
+
+    const updates = Object.entries(shiftsToUpdate).map(
+      ([date, { start_time, end_time, id }]) => {
+        const startDateTime = new Date(date);
+        const [startHour, startMinute] = start_time.split(":");
+        startDateTime.setHours(startHour, startMinute);
+
+        const endDateTime = new Date(date);
+        const [endHour, endMinute] = end_time.split(":");
+        endDateTime.setHours(endHour, endMinute);
+
+        return {
+          id, // required for Supabase upsert
+          user_id: userId,
+          start_time: startDateTime,
+          end_time: endDateTime,
+        };
+      }
+    );
+
+    // Send updates to Supabase
+    const { error } = await supabase.from("shifts").upsert(updates, {
+      onConflict: "id", // makes sure existing shifts are updated, not duplicated
+    });
+
+    if (error) {
+      console.error("Failed to save shifts:", error.message);
+      alert("There was an error saving shifts.");
+    } else {
+      alert("Shifts updated successfully!");
+      setEditingUserId(null); // Close editor after save
+    }
+  };
+
+  //auto populate logic
+
+  const timeToMinutes = (time) => {
+    const [h, m] = time.split(":").map(Number);
+    return h * 60 + m;
+  };
+  const [commonShiftSelections, setCommonShiftSelections] = useState({});
+
+  const handleCommonShiftToggle = (userId, date, shiftKey) => {
+    setCommonShiftSelections((prev) => {
+      const prevUserDay = prev?.[userId]?.[date] || [];
+      const alreadyChecked = prevUserDay.includes(shiftKey);
+      const newSelection = alreadyChecked
+        ? prevUserDay.filter((k) => k !== shiftKey)
+        : [...prevUserDay, shiftKey];
+
+      const newState = {
+        ...prev,
+        [userId]: {
+          ...prev?.[userId],
+          [date]: newSelection,
+        },
+      };
+
+      // Calculate merged start and end
+      if (newSelection.length) {
+        const minutesRanges = newSelection.map((key) => {
+          const shift = COMMON_SHIFT_TIMES[key];
+          const startMin = timeToMinutes(shift.start);
+          let endMin = timeToMinutes(shift.end);
+          if (endMin <= startMin) endMin += 24 * 60; // overnight shift
+          return [startMin, endMin];
+        });
+
+        const minStart = Math.min(...minutesRanges.map((r) => r[0]));
+        const maxEnd = Math.max(...minutesRanges.map((r) => r[1]));
+
+        const startTime = `${String(Math.floor(minStart / 60)).padStart(2, "0")}:${String(minStart % 60).padStart(2, "0")}`;
+        const endTimeRaw = maxEnd % (24 * 60);
+        const endTime = `${String(Math.floor(endTimeRaw / 60)).padStart(2, "0")}:${String(endTimeRaw % 60).padStart(2, "0")}`;
+
+        setEditedShifts((prevEditedShifts) => ({
+          ...prevEditedShifts,
+          [userId]: {
+            ...prevEditedShifts[userId],
+            [date]: {
+              ...prevEditedShifts[userId][date],
+              start_time: startTime,
+              end_time: endTime,
+            },
+          },
+        }));
+      }
+
+      return newState;
+    });
+  };
+  const shiftsOverlap = (a, b) => {
+    const toRange = ({ start, end }) => {
+      let startMin = timeToMinutes(start);
+      let endMin = timeToMinutes(end);
+      if (endMin <= startMin) endMin += 1440;
+      return [startMin, endMin];
+    };
+
+    const [startA, endA] = toRange(COMMON_SHIFT_TIMES[a]);
+    const [startB, endB] = toRange(COMMON_SHIFT_TIMES[b]);
+    return startA < endB && startB < endA;
+  };
+
+  const wouldConflict = (currentKeys, keyToTest) => {
+    return currentKeys.some(
+      (existingKey) => !shiftsOverlap(existingKey, keyToTest)
+    );
+  };
+  const handleClearShift = (userId, date) => {
+    setEditedShifts((prev) => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [date]: {
+          ...prev[userId][date],
+          start_time: "",
+          end_time: "",
+        },
+      },
+    }));
+
+    setCommonShiftSelections((prev) => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [date]: [],
       },
     }));
   };
@@ -236,6 +396,12 @@ function ManageSchedules() {
                                   Date
                                 </th>
                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Commonly Used Shifts
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Clear Shift
+                                </th>
+                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                   Start Time
                                 </th>
                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -249,7 +415,73 @@ function ManageSchedules() {
                                 .map(([date, shift]) => (
                                   <tr key={date}>
                                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                                      {new Date(date).toLocaleDateString()}
+                                      {new Date(date).toLocaleDateString(
+                                        "en-US",
+                                        {
+                                          weekday: "long",
+                                          month: "numeric",
+                                          day: "numeric",
+                                        }
+                                      )}
+                                    </td>
+                                    <td className="flex space-x-2 text-xs mb-2">
+                                      {["morning", "mid", "night"].map(
+                                        (key) => {
+                                          const isChecked =
+                                            commonShiftSelections?.[
+                                              profile.id
+                                            ]?.[date]?.includes(key) || false;
+                                          const currentSelection =
+                                            commonShiftSelections?.[
+                                              profile.id
+                                            ]?.[date] || [];
+                                          const isDisabled =
+                                            !isChecked &&
+                                            wouldConflict(
+                                              currentSelection,
+                                              key
+                                            );
+
+                                          return (
+                                            <label
+                                              key={key}
+                                              className="flex items-center space-x-1 opacity-100"
+                                            >
+                                              <input
+                                                type="checkbox"
+                                                disabled={isDisabled}
+                                                checked={isChecked}
+                                                onChange={() =>
+                                                  handleCommonShiftToggle(
+                                                    profile.id,
+                                                    date,
+                                                    key
+                                                  )
+                                                }
+                                              />
+                                              <span
+                                                className={`capitalize ${
+                                                  isDisabled
+                                                    ? "text-gray-400"
+                                                    : "text-gray-700"
+                                                }`}
+                                              >
+                                                {key}
+                                              </span>
+                                            </label>
+                                          );
+                                        }
+                                      )}
+                                    </td>
+                                    <td>
+                                      <button
+                                        onClick={() =>
+                                          handleClearShift(profile.id, date)
+                                        }
+                                        className="text-red-500 hover:text-red-700 bg-red-100 hover:bg-red-200 text-sm p-1 rounded-md transition duration-200 ease-in-out"
+                                      >
+                                        Clear
+                                      </button>
                                     </td>
                                     <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                                       <input
@@ -299,12 +531,7 @@ function ManageSchedules() {
                               Cancel
                             </button>
                             <button
-                              onClick={() =>
-                                console.log(
-                                  "Save logic goes here",
-                                  editedShifts[profile.id]
-                                )
-                              }
+                              onClick={() => handleSaveShifts(profile.id)}
                               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                             >
                               Save

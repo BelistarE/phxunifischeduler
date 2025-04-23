@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
+import Loading from "../components/Loading";
 
 export default function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
@@ -17,7 +18,7 @@ export default function ProtectedRoute({ children }) {
   }, []);
 
   if (isAuthenticated === null) {
-    return <div>Loading...</div>; // Show a loading state while checking authentication
+    return <Loading />; // Show loading state while checking authentication
   }
 
   if (!isAuthenticated) {

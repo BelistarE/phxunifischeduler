@@ -3,8 +3,6 @@ import { CircleUser } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { supabase } from "../services/supabaseClient";
 
-import { createClient } from "@supabase/supabase-js";
-
 const AddUser = () => {
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");

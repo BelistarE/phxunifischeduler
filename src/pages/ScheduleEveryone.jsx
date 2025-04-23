@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../services/supabaseClient";
 import Loading from "../components/Loading";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 import MainHeader from "../components/MainHeader";
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const ScheduleEveryone = () => {
   const [shiftsWithProfiles, setShiftsWithProfiles] = useState([]);

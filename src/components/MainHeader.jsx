@@ -4,65 +4,46 @@ import { useNavigate } from "react-router-dom";
 import AboutPanel from "../components/AboutPanel";
 import CurrentShift from "../components/CurrentShift";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/UserContext";
 
 const MainHeader = () => {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState({ full_name: "", role: "" });
-  const [isPanelOpen, setIsPanelOpen] = useState(false); // State to manage panel visibility
-  const [loading, setLoading] = useState(true); // State to track loading status
+  const location = useLocation();
+  const isActive = (path) => location.pathname === path;
   const [roles, setRoles] = useState({
     supervisor: false,
     driving: false,
     lm: false,
     push: false,
     tow: false,
-  }); // State for roles
+  });
+  // Access user, profile, and loading from UserContext
+  const { user, profile, loading } = useAuth();
 
-  const [shifts, setShifts] = useState([]);
-  const [userId, setUserId] = useState(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false); // State to manage panel visibility
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [currentShift, setCurrentShift] = useState(null);
-  const location = useLocation();
-  const isActive = (path) => location.pathname === path;
+
   const Divider = () => (
     <div className="border-b border-gray-400 my-1 ml-8 mr-4" />
   );
+
   useEffect(() => {
-    const fetchProfile = async () => {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+    if (profile) {
+      console.log("Profile loaded:", profile);
+    } else {
+      console.log("No profile found.");
+    }
 
-      if (userError) {
-        console.error("Error getting user:", userError);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("full_name, role, title, driving, lm, push, tow")
-        .eq("id", user.id) // Match the user's auth ID with the profile ID
-        .single(); // Ensure only one profile is returned
-
-      if (error) {
-        console.error("Error fetching profile:", error);
-      } else {
-        setProfile(data);
-
-        // Update roles state based on the fetched profile
-        setRoles({
-          admin: data.role === "admin",
-          user: data.role === "user",
-          supervisor: data.title === 1,
-          driving: data.driving === 1,
-          lm: data.lm === 1,
-          push: data.push === 1,
-          tow: data.tow === 1,
-        });
-      }
-    };
-  });
+    setRoles({
+      admin: profile.role === "admin",
+      user: profile.role === "user",
+      supervisor: profile.title === 1,
+      driving: profile.driving === 1,
+      lm: profile.lm === 1,
+      push: profile.push === 1,
+      tow: profile.tow === 1,
+    });
+  }, [profile]);
   return (
     <div
       className={`top bg-slate-800 text-white p-4 shadow-lg flex justify-between items-center w-100${
@@ -103,9 +84,9 @@ const MainHeader = () => {
           </button>
           <div className="profile">
             <img
-              src="/images/default-avatar.jpg"
-              alt="Profile Picture"
-              className="w-24 h-24 rounded-full object-cover"
+              src={profile.img_url}
+              alt={profile.full_name}
+              className="w-24 h-24 rounded-full object-cover border border-gray-100"
             ></img>
             <p className="font-semibold pt-4 text-lg truncate">
               {profile.full_name}

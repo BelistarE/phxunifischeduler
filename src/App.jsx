@@ -11,6 +11,7 @@ import ManageSchedules from "./pages/ManageSchedules";
 import AdminDashboard from "./pages/AdminDashboard";
 import TimeOffRequests from "./pages/TimeOffRequests";
 import ScheduleEveryone from "./pages/ScheduleEveryone";
+
 export default function App() {
   return (
     <BrowserRouter>

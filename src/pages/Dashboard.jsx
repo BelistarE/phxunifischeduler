@@ -6,12 +6,10 @@ import CurrentShift from "../components/CurrentShift";
 import { useLocation } from "react-router-dom";
 import AdminPanel from "../components/AdminPanel";
 import MainHeader from "../components/MainHeader";
-
+import { useAuth } from "../contexts/UserContext";
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState({ full_name: "", role: "" });
   const [isPanelOpen, setIsPanelOpen] = useState(false); // State to manage panel visibility
-  const [loading, setLoading] = useState(true); // State to track loading status
   const [roles, setRoles] = useState({
     supervisor: false,
     driving: false,
@@ -19,13 +17,8 @@ export default function Dashboard() {
     push: false,
     tow: false,
   }); // State for roles
-  const [shifts, setShifts] = useState([]);
   const [userId, setUserId] = useState(null);
-
-  const [currentShift, setCurrentShift] = useState(null);
-  const location = useLocation(); // Get the current location
-
-  const isActive = (path) => location.pathname === path; // Check if the current path matches
+  const [admin, setAdmin] = useState(false); // State for admin status
 
   // Function to determine the greeting based on the time of day
   const getGreeting = () => {
@@ -41,102 +34,8 @@ export default function Dashboard() {
   };
 
   const greeting = getGreeting();
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+  const { user, profile, shifts, currentShift, loading } = useAuth();
 
-      if (userError) {
-        console.error("Error getting user:", userError);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("full_name, role, title, driving, lm, push, tow")
-        .eq("id", user.id) // Match the user's auth ID with the profile ID
-        .single(); // Ensure only one profile is returned
-
-      if (error) {
-        console.error("Error fetching profile:", error);
-      } else {
-        setProfile(data);
-
-        // Update roles state based on the fetched profile
-        setRoles({
-          admin: data.role === "admin",
-          user: data.role === "user",
-          supervisor: data.title === 1,
-          driving: data.driving === 1,
-          lm: data.lm === 1,
-          push: data.push === 1,
-          tow: data.tow === 1,
-        });
-      }
-    };
-
-    fetchProfile();
-
-    const fetchUserAndShifts = async () => {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError) {
-        console.error("Error getting user:", userError);
-        return;
-      }
-
-      setUserId(user.id);
-
-      const { data: shiftsData, error: shiftsError } = await supabase
-        .from("shifts")
-        .select("id, start_time, end_time, type, position")
-        .eq("user_id", user.id)
-        .order("end_time", { ascending: true });
-
-      if (shiftsError) {
-        console.error("Error fetching shifts:", shiftsError);
-      } else {
-        const now = new Date(
-          new Date().toLocaleString("en-US", { timeZone: "America/Phoenix" })
-        );
-
-        // Filter out past shifts
-        const upcomingShifts = shiftsData.filter(
-          (shift) => new Date(shift.end_time) >= now
-        );
-
-        // Find the current shift
-        const current = upcomingShifts.find((shift) => {
-          const startTime = new Date(shift.start_time);
-          const endTime = new Date(shift.end_time);
-
-          return startTime <= now && endTime >= now;
-        });
-
-        setCurrentShift(current);
-
-        // Remove the current shift from the list of upcoming shifts
-        const filteredShifts = current
-          ? upcomingShifts.filter((shift) => shift.id !== current.id)
-          : upcomingShifts;
-
-        setShifts(filteredShifts);
-      }
-    };
-
-    const loadData = async () => {
-      await fetchProfile();
-      await fetchUserAndShifts();
-      setLoading(false);
-    };
-
-    loadData();
-  }, []);
   const Divider = () => (
     <div className="border-b border-gray-400 my-1 ml-8 mr-4" />
   );
@@ -190,7 +89,9 @@ export default function Dashboard() {
           <h1 className="text-xl font-bold text-gray-800 w-full whitespace-nowrap self-center justify-self-center text-center col-span-full">
             {greeting}, {profile.full_name}!
           </h1>
-          <div className="w-full max-w-md">{roles.admin && <AdminPanel />}</div>
+          <div className="w-full max-w-md">
+            {profile.role === "admin" && <AdminPanel />}
+          </div>
           <div className="w-full max-w-md">
             <CurrentShift currentShift={currentShift} />
             <div className="bg-white shadow-md rounded-lg p-4 mt-4 w-full max-w-md">

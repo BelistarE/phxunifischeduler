@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
 const GITHUB_REPO = "BelistarE/phxunifischeduler";
 const GITHUB_API_URL = `https://api.github.com/repos/BelistarE/phxunifischeduler/issues`;

@@ -171,7 +171,7 @@ const BugReport = () => {
         </svg>
       </div>
 
-      <div className="flex-grow overflow-y-auto m-8 md:m-10 md:max-w-7xl mx-auto justify-center items-center">
+      <div className="flex-grow overflow-y-auto pt-4 md:max-w-7xl mx-auto justify-center items-center">
         <div className="flex flex-col md:flex-row gap-8 items-stretch overflow-visible m-3">
           {/* Bug Report Form */}
           <div className="w-full md:w-1/2 flex flex-col max-w-full  h-full ">

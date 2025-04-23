@@ -6,11 +6,11 @@ import { supabase } from "../services/supabaseClient";
 const AddUser = () => {
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
-
+  const [loading, setLoading] = React.useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = uuidv4();
-
+    setLoading(true);
     try {
       const response = await fetch(
         "https://ikkdbqlqmnzlwcboopin.functions.supabase.co/send-invite",
@@ -31,7 +31,9 @@ const AddUser = () => {
       setEmail("");
     } catch (err) {
       console.error("Error sending invite:", err);
+      setLoading(false);
     }
+    setLoading(false);
   };
 
   return (
@@ -78,14 +80,15 @@ const AddUser = () => {
             MAKE SURE THE EMAIL IS CORRECT
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            The employee will recieve an email with a code to create a password
+            The employee will receive an email with a code to create a password
           </p>
         </div>
         <button
           type="submit"
           className="w-full bg-frontier hover:bg-frontier-dark text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-200"
+          disabled={loading}
         >
-          Add User
+          {loading ? "Adding user..." : "Add User"}
         </button>
       </form>
     </div>

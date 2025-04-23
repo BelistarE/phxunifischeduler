@@ -101,40 +101,49 @@ export default function Dashboard() {
               ) : (
                 <ul className="space-y-4">
                   {shifts.map((shift) => {
-                    const startDate = new Date(shift.start_time); // Convert start_time to Date object
-                    const endDate = new Date(shift.end_time); // Convert end_time to Date object
+                    const startDate = new Date(shift.start_time);
+                    const endDate = new Date(shift.end_time);
                     const dayOfWeek = startDate.toLocaleDateString("en-US", {
                       weekday: "long",
-                    }); // Get day of the week
+                    });
                     const formattedDate = startDate.toLocaleDateString(
                       "en-US",
                       {
                         month: "long",
                         day: "numeric",
                       }
-                    ); // Format date without the year
+                    );
                     const startTime = startDate.toLocaleTimeString("en-US", {
                       hour: "numeric",
                       minute: "2-digit",
-                    }); // Format start time
+                    });
                     const endTime = endDate.toLocaleTimeString("en-US", {
                       hour: "numeric",
                       minute: "2-digit",
-                    }); // Format end time
+                    });
 
                     return (
                       <li
                         key={shift.id}
-                        className="bg-white p-4 rounded-lg shadow-md border border-gray-200"
+                        className="bg-white p-4 rounded-lg shadow-md border border-gray-200 flex items-center justify-between"
                       >
-                        <p className="text-lg font-semibold text-gray-800">
-                          {dayOfWeek}, {formattedDate}
-                        </p>
-                        <p className="text-gray-600">{shift.position}</p>
-                        <p className="text-gray-800">
-                          {startTime} - {endTime}
-                        </p>
-                        <p className="text-gray-600">{shift.type}</p>
+                        <div>
+                          <p className="text-lg font-semibold text-gray-800">
+                            {dayOfWeek}, {formattedDate}
+                          </p>
+                          <p className="text-gray-600">{shift.position}</p>
+                          <p className="text-gray-800">
+                            {startTime} - {endTime}
+                          </p>
+                          <p className="text-gray-600">{shift.type}</p>
+                        </div>
+
+                        <button
+                          className="bg-gray-200 hover:bg-gray-300 text-slate-700 text-sm font-semibold py-2 px-3 rounded focus:outline-none focus:shadow-outline"
+                          type="button"
+                        >
+                          Drop
+                        </button>
                       </li>
                     );
                   })}

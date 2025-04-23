@@ -11,7 +11,7 @@ import ManageSchedules from "./pages/ManageSchedules";
 import AdminDashboard from "./pages/AdminDashboard";
 import TimeOffRequests from "./pages/TimeOffRequests";
 import ScheduleEveryone from "./pages/ScheduleEveryone";
-
+import Activate from "./pages/Activate";
 export default function App() {
   return (
     <BrowserRouter>
@@ -19,6 +19,8 @@ export default function App() {
         {/* Public route for login */}
         <Route path="/login" element={<Login />} />
         <Route path="/under-contruction" element={<UnderConstruction />} />
+        <Route path="/activate" element={<Activate />} />
+
         {/* Protected route for dashboard */}
         <Route
           path="/"

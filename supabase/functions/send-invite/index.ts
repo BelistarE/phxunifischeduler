@@ -58,10 +58,90 @@ serve(async (req: Request) => {
     // Send email using Resend
     const emailResult = await resend.emails.send({
       from: "Unifi Scheduling <noreply@cs-memory.online>",
-
       to: email,
-      subject: "You're Invited!",
-      html: `<p>Hi ${name},</p><p>Click <a href="https://phxunifischeduler.vercel.app/activate?token=${token}">here</a> to activate your account.</p>`,
+      subject: "Activate Your When 3 Work Account",
+      html: `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Activate Your Account</title>
+      <style>
+          body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              background-color: #f4f4f4;
+              color: #333;
+              margin: 0;
+              padding: 20px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              min-height: 100vh;
+          }
+          .container {
+              background-color: #fff;
+              padding: 40px;
+              border-radius: 8px;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              text-align: center;
+              width: 90%;
+              max-width: 600px;
+          }
+          .logo {
+              max-width: 150px;
+              margin-bottom: 20px;
+          }
+          h1 {
+              color: #007bff;
+              margin-top: 0;
+              margin-bottom: 20px;
+          }
+          p {
+              font-size: 16px;
+              line-height: 1.6;
+              margin-bottom: 20px;
+          }
+          .button {
+              display: inline-block;
+              padding: 12px 24px;
+              background-color: #007bff;
+              color: #fff;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: bold;
+              transition: background-color 0.3s ease;
+          }
+          .button:hover {
+              background-color: #0056b3;
+          }
+          .activation-link {
+              font-size: 14px;
+              color: #555;
+              word-break: break-all;
+          }
+          .footer {
+              margin-top: 30px;
+              font-size: 12px;
+              color: #777;
+          }
+      </style>
+  </head>
+  <body>
+      <div class="container">
+<img src="https://unifiservice.com/wp-content/uploads/2023/02/logo-multicolor-horizontal-02.png" alt="Your Logo" class="logo">
+          <h1>You're Invited!</h1>
+          <p>Hi ${name},</p>
+          <p>Welcome to Unifi Scheduling! Please click the button below to activate your account:</p>
+          <p><a href="https://phxunifischeduler.vercel.app/activate?token=${token}" class="button">Activate Account</a></p>
+          <p class="activation-link">Or, you can copy and paste the following link into your browser:<br>
+          <a href="https://phxunifischeduler.vercel.app/activate?token=${token}">https://phxunifischeduler.vercel.app/activate?token=${token}</a></p>
+          <p class="footer">If you did not sign up for Unifi Scheduling, you can safely ignore this email.</p>
+      </div>
+  </body>
+  </html>
+  `,
+      text: `Hi <span class="math-inline">\{name\},\\n\\nPlease click the following link to activate your account\:\\nhttps\://phxunifischeduler\.vercel\.app/activate?token\=</span>{token}\n\nOr copy and paste this link into your browser:\nhttps://phxunifischeduler.vercel.app/activate?token=${token}\n\nIf you did not sign up for Unifi Scheduling, you can safely ignore this email.\n\nThanks,\nThe Unifi Scheduling Team`,
     });
 
     if (emailResult.error) {

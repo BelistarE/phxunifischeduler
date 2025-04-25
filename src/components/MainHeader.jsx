@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import AboutPanel from "../components/AboutPanel";
-import CurrentShift from "../components/CurrentShift";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/UserContext";
 

@@ -161,7 +161,7 @@ const Users = () => {
                     <img
                       src={profile.img_url}
                       alt={`${profile.full_name}'s profile`}
-                      className="w-16 h-16 rounded-full mr-4"
+                      className="w-16 h-16 object-cover rounded-full"
                     />
                   )}
                   <div className="flex flex-col">

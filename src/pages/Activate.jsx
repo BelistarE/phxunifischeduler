@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 const Activate = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-
+  const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -111,7 +111,7 @@ const Activate = () => {
       }
 
       alert("Account activated!");
-      navigate("/login");
+      navigate("/");
     } catch (err) {
       console.error("Unexpected error:", err);
       setError("An unexpected error occurred. Please try again.");

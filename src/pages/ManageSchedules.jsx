@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import AdminDashHeader from "../components/AdminDashHeader";
 import { supabase } from "../services/supabaseClient";
 import Loading from "../components/Loading";
-import { v4 as uuidv4 } from "uuid";
 
 function ManageSchedules() {
   const [profilesWithWeeklyShifts, setProfilesWithWeeklyShifts] = useState([]);
@@ -176,20 +175,20 @@ function ManageSchedules() {
   };
   const handleSaveShifts = async (userId) => {
     const shiftsToUpdate = editedShifts[userId];
-    const token = uuidv4();
     const updates = Object.entries(shiftsToUpdate).map(
       ([date, { start_time, end_time, id }]) => {
         const startDateTime = new Date(date);
         const [startHour, startMinute] = start_time.split(":");
         startDateTime.setHours(startHour, startMinute);
-
+        console.log("startDateTime", startDateTime);
         const endDateTime = new Date(date);
         const [endHour, endMinute] = end_time.split(":");
+        console.log("endDateTime", endDateTime);
         endDateTime.setHours(endHour, endMinute);
 
         return {
-          id: id || token, // Use the existing ID or a new token for new shifts
           user_id: userId,
+          type: "ramp",
           start_time: startDateTime,
           end_time: endDateTime,
         };

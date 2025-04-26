@@ -8,7 +8,6 @@ const Activate = () => {
   const token = searchParams.get("token");
 
   const [password, setPassword] = useState("");
-  const [passwordAgain, setPasswordAgain] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);

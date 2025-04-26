@@ -12,4 +12,9 @@ export default defineConfig({
       exportAsDefault: true, // Ensure SVGs are exported as default
     }),
   ],
+  server: {
+    proxy: {
+      "/api": "http://localhost:3000",
+    },
+  },
 });

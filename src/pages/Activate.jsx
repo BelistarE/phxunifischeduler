@@ -25,10 +25,14 @@ const Activate = () => {
   const toggleConfirmPasswordVisibility = () => {
     setConfirmPasswordVisible(!confirmPasswordVisible);
   };
-
   // Fetch user info from token
   useEffect(() => {
     const getUserFromToken = async () => {
+      if (!token) {
+        setError("Missing activation token.");
+        return;
+      }
+
       const { data, error } = await supabase
         .from("pending")
         .select("*")
@@ -37,6 +41,7 @@ const Activate = () => {
         .single();
 
       if (error || !data) {
+        console.error("Error fetching user from token:", error);
         setError("Invalid or expired token.");
         return;
       }
@@ -45,9 +50,7 @@ const Activate = () => {
       setName(data.name);
     };
 
-    if (token) {
-      getUserFromToken();
-    }
+    getUserFromToken();
   }, [token]);
 
   const handleActivate = async () => {
@@ -74,32 +77,49 @@ const Activate = () => {
     setLoading(true);
     setError(null);
 
-    const res = await fetch("/api/activate-user", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      // Call the API to activate the user
+      console.log("Sending to backend:", {
         email,
         full_name: name,
         password,
         token,
-      }),
-    });
-    console.log("Raw response:", res);
-    const data = await res.json();
-    setLoading(false);
+      });
 
-    if (!res.ok) {
-      const errorText = await res.text(); // Read the raw response text
-      console.error("Error response text:", errorText);
-      setError("Failed to activate account. Please try again.");
+      const res = await fetch("/api/activate-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          full_name: name,
+          password,
+          token,
+        }),
+      });
+      let data;
+      try {
+        data = await res.json(); // only read once
+      } catch (err) {
+        const text = await res.text(); // fallback if JSON parsing fails
+        console.error("Error parsing JSON response:", err);
+        console.log("Raw response:", text);
+        return;
+      }
+
+      if (!res.ok) {
+        console.error("Server error:", data);
+        return;
+      }
+
+      alert("Account activated!");
+      navigate("/login");
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    alert("Account activated!");
-    navigate("/login");
   };
-
   return (
     <div className="flex items-center flex-col justify-between min-h-screen bg-gray-100 px-4">
       <img

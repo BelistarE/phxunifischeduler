@@ -175,29 +175,38 @@ function ManageSchedules() {
   };
   const handleSaveShifts = async (userId) => {
     const shiftsToUpdate = editedShifts[userId];
-    const updates = Object.entries(shiftsToUpdate).map(
-      ([date, { start_time, end_time, id }]) => {
+
+    // Filter out days with no shifts
+    const updates = Object.entries(shiftsToUpdate)
+      .filter(([date, { start_time, end_time }]) => start_time && end_time) // Only include days with both start and end times
+      .map(([date, { start_time, end_time, id }]) => {
         const startDateTime = new Date(date);
+        const endDateTime = new Date(date);
+
+        // Set start time
         const [startHour, startMinute] = start_time.split(":");
         startDateTime.setHours(startHour, startMinute);
-        console.log("startDateTime", startDateTime);
-        const endDateTime = new Date(date);
+
+        // Set end time
         const [endHour, endMinute] = end_time.split(":");
-        console.log("endDateTime", endDateTime);
         endDateTime.setHours(endHour, endMinute);
 
         return {
           user_id: userId,
-          type: "ramp",
-          start_time: startDateTime,
-          end_time: endDateTime,
+          type: "ramp", // Adjust this type as needed
+          start_time: startDateTime.toISOString(),
+          end_time: endDateTime.toISOString(),
         };
-      }
-    );
+      });
+
+    if (updates.length === 0) {
+      alert("No shifts to save.");
+      return;
+    }
 
     // Send updates to Supabase
     const { error } = await supabase.from("shifts").upsert(updates, {
-      onConflict: "id", // makes sure existing shifts are updated, not duplicated
+      onConflict: "id", // Ensures existing shifts are updated, not duplicated
     });
 
     if (error) {
@@ -332,9 +341,19 @@ function ManageSchedules() {
           </button>
         </section>
         <section className="mb-8">
-          <h2 className="text-lg font-semibold text-frontier mb-2">
-            Current Schedules
-          </h2>
+          <div className="flex gap-6">
+            <button className="border border-frontier mb-4 rounded-sm shadow-sm px-3 py-1 flex items-center space-x-2 hover:bg-gray-300 transition duration-200 ease-in-out">
+              <h2 className="text-lg font-semibold text-frontier ">
+                Current Schedules
+              </h2>
+            </button>
+            <button className="border border-frontier mb-4 rounded-sm shadow-sm px-3 py-1 flex items-center space-x-2 hover:bg-gray-300 transition duration-200 ease-in-out">
+              <h2 className="text-lg font-semibold text-frontier ">
+                Upcoming Week
+              </h2>
+            </button>
+          </div>
+
           <div className="bg-white shadow rounded-md overflow-x-auto">
             <table className="min-w-full table-auto">
               <thead className="bg-gray-100">
